@@ -1,0 +1,25 @@
+@import '../../themes/index.less';
+
+.ui-table-full-height {
+  .@{ant-prefix}-table {
+    height: 100%;
+    &-wrapper {
+      height: 100%;
+    }
+
+    &-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    &-body {
+      flex: 1 1;
+    }
+  }
+  .@{ant-prefix}-spin {
+    &-nested-loading, &-container {
+      height: 100%;
+    }
+  }
+}
