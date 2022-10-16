@@ -78,6 +78,25 @@ importers:
       '@typescript-eslint/parser': 5.40.0_dyxdave6dwjbccc5dgiifcmuza
       typescript: 4.8.3
 
+  packages/network-interceptor:
+    specifiers:
+      '@types/lodash': ^4.14.184
+      eslint-config-custom: workspace:*
+      lodash: ^4.17.21
+      tiny-emitter: ^2.1.0
+      tiny-uid: ^1.1.2
+      tsconfig: workspace:*
+      typescript: ^4.5.2
+    dependencies:
+      lodash: 4.17.21
+      tiny-emitter: 2.1.0
+      tiny-uid: 1.1.2
+    devDependencies:
+      '@types/lodash': 4.14.184
+      eslint-config-custom: link:../eslint-config-custom
+      tsconfig: link:../tsconfig
+      typescript: 4.8.3
+
   packages/tsconfig:
     specifiers: {}
 
@@ -604,7 +623,6 @@ packages:
 
   /@types/lodash/4.14.184:
     resolution: {integrity: sha512-RoZphVtHbxPZizt4IcILciSWiC6dcn+eZ8oX9IWEYfDMcocdd42f7NPI6fQj+6zI8y4E0L7gu2pcZKLGTRaV9Q==}
-    dev: false
 
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
@@ -3582,6 +3600,10 @@ packages:
 
   /text-table/0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
+
+  /tiny-emitter/2.1.0:
+    resolution: {integrity: sha512-NB6Dk1A9xgQPMoGqC5CVXn123gWyte215ONT5Pp5a0yt4nlEoO1ZWeCwpncaekPHXO60i47ihFnZPiRPjRMq4Q==}
+    dev: false
 
   /tiny-uid/1.1.2:
     resolution: {integrity: sha512-0beRFXR+fv4C40ND2PqgNjq6iyB1dKXciKJjslLw0kPYCcR82aNd2b+Tt2yy06LimIlvtoehgvrm/fUZCutSfg==}
