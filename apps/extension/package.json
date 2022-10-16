@@ -18,6 +18,7 @@
     "react-dom": "^18.2.0",
     "tiny-uid": "^1.1.2",
     "ui": "workspace:^0.0.0",
+    "network-interceptor": "workspace:^0.0.0",
     "webext-bridge": "^6.0.0-rc2",
     "webextension-polyfill": "^0.10.0"
   },
