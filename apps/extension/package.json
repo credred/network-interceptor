@@ -16,7 +16,7 @@
     "classnames": "^2.3.2",
     "lodash": "^4.17.21",
     "monaco-editor": "^0.34.0",
-    "network-interceptor": "workspace:^0.0.0",
+    "common": "workspace:^0.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tiny-uid": "^1.1.2",

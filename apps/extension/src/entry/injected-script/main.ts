@@ -1,5 +1,5 @@
 import { sendMessage, setNamespace } from 'webext-bridge/window'
-import { networkEmitter, enable } from 'network-interceptor';
+import { networkEmitter, enable } from 'common/network-interceptor';
 
 enable()
 

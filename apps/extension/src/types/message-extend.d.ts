@@ -1,4 +1,4 @@
-import { RequestInfo, ResponseInfo } from "network-interceptor"
+import { RequestInfo, ResponseInfo } from "common/network-interceptor"
 import 'webext-bridge'
 
 declare module 'webext-bridge' {

@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { onMessage } from "webext-bridge/devtools";
-import { RequestInfo, ResponseInfo } from "network-interceptor";
+import { RequestInfo, ResponseInfo } from "common/network-interceptor";
 import NetworkBrief from "../NetworkBrief";
 import NetWorkDetail from "../NetworkDetail";
 
