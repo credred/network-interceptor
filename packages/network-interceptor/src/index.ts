@@ -1,5 +1,6 @@
 export type { RequestInfo, ResponseInfo } from './types'
 export { networkEmitter } from './core/event-emitter'
+export { BLOB_TEXT } from './constants'
 
 import { InterceptedFetch } from "./core/fetch.interceptor";
 

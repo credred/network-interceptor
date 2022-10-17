@@ -1,5 +1,6 @@
 import { isNil, isPlainObject, isString } from "lodash";
 import uid from "tiny-uid";
+import { BLOB_TEXT } from '../constants';
 import { networkEmitter } from "./event-emitter";
 
 const originFetch = fetch;
@@ -28,19 +29,25 @@ const transformBody = (body?: BodyInit | null) => {
   } else if (isString(body)) {
     return body;
   }
-  return "-- blob --";
+  return BLOB_TEXT;
 };
 
 const transformResponseData = (res: Response) => {
   const contentType = res.headers.get("Content-Type");
+  let data = undefined
+  let parsable = true
   if (contentType === null || contentType === undefined) {
-    return undefined;
-  } else if (contentType.includes("json")) {
-    return res.json() as object;
-  } else if (contentType.includes("text")) {
-    return res.text();
+    data = undefined;
+  } else if (contentType.includes("json") || contentType.includes("text")) {
+    data = res.text();
   } else {
-    return "-- blob --";
+    data = undefined;
+    parsable = false
+  }
+
+  return {
+    data,
+    parsable,
   }
 };
 
@@ -73,9 +80,9 @@ export async function InterceptedFetch(
 
   const res = await originFetch(input, init);
 
-  const body = transformResponseData(res);
+  const { data, parsable } = transformResponseData(res);
 
-  void Promise.resolve(body).then((body) => {
+  void Promise.resolve(data).then((data) => {
     return networkEmitter.emit(
       "response",
       {
@@ -83,7 +90,8 @@ export async function InterceptedFetch(
         status: res.status,
         statusText: res.statusText,
         responseHeaders: transformHeaders(res.headers),
-        responseBody: body,
+        responseBody: data,
+        responseBodyParsable: parsable,
       },
     );
   });

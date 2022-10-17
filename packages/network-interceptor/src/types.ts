@@ -12,7 +12,8 @@ export interface ResponseInfo {
   status: number
   statusText: string
   responseHeaders?: Record<string, string>
-  responseBody?: string | object
+  responseBody?: string
+  responseBodyParsable?: boolean
 }
 
 export interface NetworkEmitterEventMap {
