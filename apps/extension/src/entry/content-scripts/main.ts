@@ -4,4 +4,4 @@ import { allowWindowMessaging } from 'webext-bridge/content-script';
 
 void insertScript(scriptPath)
 
-allowWindowMessaging('net-guard')
+allowWindowMessaging('network-interceptor')

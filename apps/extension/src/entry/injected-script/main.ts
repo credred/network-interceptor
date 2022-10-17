@@ -1,5 +1,5 @@
 import { sendMessage, setNamespace } from 'webext-bridge/window'
-import { networkEmitter, enable } from 'common/network-interceptor';
+import { networkEmitter, enable } from 'common/api-interceptor';
 
 enable()
 
@@ -11,4 +11,4 @@ networkEmitter.on('response', (responseInfo) => {
   void sendMessage('response', responseInfo, 'devtools')
 })
 
-setNamespace('net-guard')
+setNamespace('network-interceptor')

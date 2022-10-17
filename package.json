@@ -1,5 +1,5 @@
 {
-  "name": "net-guard",
+  "name": "network-interceptor",
   "version": "0.0.0",
   "private": true,
   "workspaces": [
