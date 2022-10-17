@@ -1,11 +1,10 @@
-@import '../../themes/index.less';
+@import "../../themes/index.less";
+
+@table-prefix-cls: ~"@{ant-prefix}-table";
 
 .ui-table-full-height {
-  .@{ant-prefix}-table {
+  .@{table-prefix-cls} {
     height: 100%;
-    &-wrapper {
-      height: 100%;
-    }
 
     &-container {
       height: 100%;
@@ -17,8 +16,14 @@
       flex: 1 1;
     }
   }
+
+  &.@{table-prefix-cls}-wrapper {
+    height: 100%;
+  }
+
   .@{ant-prefix}-spin {
-    &-nested-loading, &-container {
+    &-nested-loading,
+    &-container {
       height: 100%;
     }
   }

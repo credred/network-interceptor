@@ -17,13 +17,12 @@ const InternalTable = <RecordType extends object = any>(
   props: TableProps<RecordType>,
   ref: ForwardedRef<HTMLDivElement>
 ) => {
-  const { fullHeight } = props;
-  console.log("internal");
+  const { fullHeight, ...restProps } = props;
 
   return (
     <AntTable
       ref={ref}
-      {...props}
+      {...restProps}
       className={classNames(
         props.className,
         fullHeight && FULL_HEIGHT_CLASS_NAME
