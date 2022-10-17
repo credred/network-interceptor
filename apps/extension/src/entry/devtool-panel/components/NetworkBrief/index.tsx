@@ -39,7 +39,6 @@ const NetworkBrief: FC<NetworkBriefProps> = (props) => {
 
   return  <Table<NetworkInfo>
   rowKey="id"
-  style={{height: '100%', overflow: 'auto'}}
   dataSource={dataSource}
   onRow={(record) => {
     return {

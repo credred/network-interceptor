@@ -1,7 +1,11 @@
+import * as monaco from "monaco-editor";
+import Editor, { loader } from "@monaco-editor/react";
 import { FC } from "react";
 import { Collapse, Tabs } from "ui";
 import { NetworkInfo } from "../Network";
 import "./index.less";
+
+loader.config({ monaco });
 
 interface NetWorkDetailProps {
   detail: NetworkInfo | undefined;
@@ -21,6 +25,16 @@ const objToLabelValue = (obj: Record<string, string>) => {
     result.push({ label: key, value });
     return result;
   }, []);
+};
+
+const detectLang = (headers?: Record<string, string>) => {
+  if (!headers) return undefined
+
+  const contentType = headers["content-type"];
+
+  if (contentType.includes("json")) {
+    return 'json'
+  }
 };
 
 const HeadersList: FC<HeadersListProps> = (props) => {
@@ -85,6 +99,8 @@ const Headers: FC<NetWorkDetailProps> = (props) => {
 const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
   const { detail } = props;
 
+  const lang = detectLang(detail?.responseHeaders)
+  
   return (
     <div className="min-w-[600px]">
       <div className="h-full">
@@ -100,9 +116,13 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
               label: "Response",
               key: "response",
               children: (
-                <div className="whitespace-pre-line">
-                  {JSON.stringify(detail?.responseBody)}
-                </div>
+                <Editor
+                  options={{ readOnly: !detail?.responseBodyParsable }}
+                  theme="vs-dark"
+                  language={lang}
+                  height={"100%"}
+                  value={detail?.responseBody}
+                />
               ),
             },
           ]}
