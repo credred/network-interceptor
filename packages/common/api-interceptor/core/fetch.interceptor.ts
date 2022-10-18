@@ -1,6 +1,7 @@
 import { isNil, isPlainObject, isString } from "lodash";
 import uid from "tiny-uid";
-import { BLOB_TEXT } from '../constants';
+import { BLOB_TEXT } from "../constants";
+import { RequestInfo, ResponseInfo } from "../types";
 import { networkEmitter } from "./event-emitter";
 
 const originFetch = fetch;
@@ -34,25 +35,25 @@ const transformBody = (body?: BodyInit | null) => {
 
 const transformResponseData = (res: Response) => {
   const contentType = res.headers.get("Content-Type");
-  let data = undefined
-  let parsable = true
+  let data = undefined;
+  let parsable = true;
   if (contentType === null || contentType === undefined) {
     data = undefined;
   } else if (contentType.includes("json") || contentType.includes("text")) {
     data = res.text();
   } else {
     data = undefined;
-    parsable = false
+    parsable = false;
   }
 
   return {
     data,
     parsable,
-  }
+  };
 };
 
 export async function InterceptedFetch(
-  input: RequestInfo | URL,
+  input: Request | string | URL,
   init?: RequestInit
 ) {
   let url: string | URL;
@@ -64,36 +65,33 @@ export async function InterceptedFetch(
     url = input;
   }
 
-  const id = uid();
+  const requestInfo: RequestInfo = {
+    id: uid(),
+    type: "fetch",
+    stage: "request",
+    method: option?.method?.toUpperCase() || "GET",
+    url: new URL(url, location.href).toString(),
+    requestHeaders: transformHeaders(option?.headers),
+    requestBody: transformBody(option?.body),
+  };
 
-  networkEmitter.emit(
-    "request",
-    {
-      id: id,
-      type: "fetch",
-      method: option?.method?.toUpperCase() || "GET",
-      url: new URL(url, location.href).toString(),
-      requestHeaders: transformHeaders(option?.headers),
-      requestBody: transformBody(option?.body),
-    },
-  );
+  networkEmitter.emit("request", requestInfo);
 
   const res = await originFetch(input, init);
 
   const { data, parsable } = transformResponseData(res);
 
   void Promise.resolve(data).then((data) => {
-    return networkEmitter.emit(
-      "response",
-      {
-        id,
-        status: res.status,
-        statusText: res.statusText,
-        responseHeaders: transformHeaders(res.headers),
-        responseBody: data,
-        responseBodyParsable: parsable,
-      },
-    );
+    const responseInfo: ResponseInfo = {
+      ...requestInfo,
+      stage: 'response',
+      status: res.status,
+      statusText: res.statusText,
+      responseHeaders: transformHeaders(res.headers),
+      responseBody: data,
+      responseBodyParsable: parsable,
+    };
+    return networkEmitter.emit("response", responseInfo);
   });
 
   return res;

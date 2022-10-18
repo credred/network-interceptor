@@ -1,10 +1,8 @@
 import { FC, useEffect, useState } from "react";
 import { onMessage } from "webext-bridge/devtools";
-import { RequestInfo, ResponseInfo } from "common/api-interceptor";
 import NetworkBrief from "../NetworkBrief";
 import NetWorkDetail from "../NetworkDetail";
-
-export type NetworkInfo = RequestInfo & Partial<ResponseInfo>;
+import { NetworkInfo } from 'common/api-interceptor/types';
 
 const useData = () => {
   const [data, setData] = useState<Record<string, NetworkInfo>>({});
@@ -16,10 +14,7 @@ const useData = () => {
 
   useEffect(() => {
     onMessage("response", ({ data: responseData }) => {
-      setData((data) => ({
-        ...data,
-        [responseData.id]: { ...data[responseData.id], ...responseData },
-      }));
+      setData((data) => ({ ...data, [responseData.id]: responseData }));
     });
   }, []);
 

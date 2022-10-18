@@ -2,7 +2,7 @@ import * as monaco from "monaco-editor";
 import Editor, { loader } from "@monaco-editor/react";
 import { FC } from "react";
 import { Collapse, Tabs } from "ui";
-import { NetworkInfo } from "../Network";
+import { NetworkInfo } from 'common/api-interceptor';
 import "./index.less";
 
 loader.config({ monaco });

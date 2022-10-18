@@ -1,4 +1,4 @@
-export type { RequestInfo, ResponseInfo } from './types'
+export type { RequestInfo, ResponseInfo, NetworkInfo, StrongNetworkInfo } from './types'
 export { networkEmitter } from './core/event-emitter'
 export { BLOB_TEXT } from './constants'
 

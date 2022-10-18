@@ -1,20 +1,28 @@
 export interface RequestInfo {
   id: string
   type: 'xhr' | 'fetch'
+  stage: 'request'
   url: string
   method: string
   requestHeaders?: Record<string, string>
   requestBody?: string
 }
 
-export interface ResponseInfo {
+export interface ResponseInfo extends Omit<RequestInfo, 'stage'> {
   id: string
+  stage: 'response'
   status: number
   statusText: string
   responseHeaders?: Record<string, string>
   responseBody?: string
   responseBodyParsable?: boolean
 }
+
+export type NetworkInfo = Omit<RequestInfo, 'stage'> & Partial<Omit<ResponseInfo, 'stage'>> & {
+  stage: 'request' | 'response'
+}
+
+export type StrongNetworkInfo = RequestInfo | ResponseInfo
 
 export interface NetworkEmitterEventMap {
   request: RequestInfo

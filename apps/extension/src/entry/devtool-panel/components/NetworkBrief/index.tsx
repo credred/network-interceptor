@@ -1,7 +1,7 @@
 import { FC, useMemo } from "react";
 import { Table, TableColumnsType } from "ui";
 import classNames from "classnames";
-import { NetworkInfo } from "../Network";
+import { NetworkInfo } from 'common/api-interceptor';
 
 interface NetworkBriefProps {
   data: Record<string, NetworkInfo>;
