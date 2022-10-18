@@ -1,3 +1,3 @@
 import { devtools } from "webextension-polyfill";
 
-void devtools.panels.create('NetGuard', "", 'src/entry/devtool-panel/index.html');
+void devtools.panels.create('Network Interceptor', "", 'src/entry/devtool-panel/index.html');
