@@ -16,6 +16,10 @@ const manifest: Manifest.WebExtensionManifest = {
       matches: ["<all_urls>"],
     },
   ],
+  permissions: [
+    "storage",
+    "unlimitedStorage",
+  ],
   devtools_page: "src/entry/devtool/index.html",
 };
 
