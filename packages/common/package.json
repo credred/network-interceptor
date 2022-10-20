@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "lodash": "^4.17.21",
+    "path-to-regexp": "^6.2.1",
     "tiny-emitter": "^2.1.0",
     "tiny-uid": "^1.1.2"
   }
