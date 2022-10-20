@@ -1,9 +1,16 @@
 import * as monaco from "monaco-editor";
 import Editor, { loader } from "@monaco-editor/react";
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { Collapse, Tabs } from "ui";
-import { NetworkInfo } from 'common/api-interceptor';
+import { NetworkInfo } from "common/api-interceptor";
 import "./index.less";
+import uid from "tiny-uid";
+import { getRuleById, saveRule } from "../../../../lib/storage";
+import { NetworkRule } from "common/network-rule";
+import { usePrevious, useMemoizedFn } from "ahooks";
+import debugFn from "debug";
+const debug = debugFn("NetworkDetail");
+debugFn.enable("*");
 
 loader.config({ monaco });
 
@@ -28,12 +35,12 @@ const objToLabelValue = (obj: Record<string, string>) => {
 };
 
 const detectLang = (headers?: Record<string, string>) => {
-  if (!headers) return undefined
+  if (!headers) return undefined;
 
   const contentType = headers["content-type"];
 
   if (contentType.includes("json")) {
-    return 'json'
+    return "json";
   }
 };
 
@@ -96,11 +103,73 @@ const Headers: FC<NetWorkDetailProps> = (props) => {
   );
 };
 
-const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
-  const { detail } = props;
+const useRule = (networkInfo?: NetworkInfo) => {
+  const previousNetworkInfo = usePrevious(networkInfo);
 
-  const lang = detectLang(detail?.responseHeaders)
-  
+  const networkInfoChanged =
+    previousNetworkInfo?.id !== networkInfo?.id ||
+    previousNetworkInfo?.ruleId !== networkInfo?.ruleId;
+
+  const [rule, setRule] = useState<NetworkRule | undefined>(undefined);
+
+  useEffect(() => {
+    const fn = async () => {
+      if (!networkInfo) return;
+      if (networkInfoChanged) {
+        // generate new rule
+        let partialRule: Partial<NetworkRule> = {};
+        if (networkInfo.ruleId) {
+          partialRule = await getRuleById(networkInfo.ruleId);
+        }
+        const requestUrl = new URL(networkInfo.url);
+        const rule: NetworkRule = {
+          ...partialRule,
+          version: 1,
+          id: partialRule?.id ?? uid(),
+          baseMatchRule: partialRule?.baseMatchRule ?? {
+            method: networkInfo.method,
+            path: requestUrl.pathname,
+          },
+          advanceMatchRules: partialRule?.advanceMatchRules || [],
+          modifyInfo: partialRule?.modifyInfo || {
+            continueRequest: false,
+            status: 200,
+            responseHeaders: networkInfo.responseHeaders,
+            statusText: "OK",
+          },
+        };
+        debug("init rule", rule);
+
+        setRule(rule);
+      } else {
+        // update rule
+      }
+    };
+    void fn();
+  }, [networkInfo]);
+
+  return rule;
+};
+
+const useRuleForUpdate = (rule?: NetworkRule) => {
+  const updateResponseBody = useMemoizedFn((body: string | undefined) => {
+    if (!rule) return;
+    void saveRule({
+      ...rule,
+      modifyInfo: { ...rule.modifyInfo, responseBody: body },
+    });
+  });
+
+  return { updateResponseBody };
+};
+
+const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
+  const { detail: networkInfo } = props;
+
+  const lang = detectLang(networkInfo?.responseHeaders);
+  const rule = useRule(networkInfo);
+  const { updateResponseBody } = useRuleForUpdate(rule);
+
   return (
     <div className="min-w-[600px]">
       <div className="h-full">
@@ -110,20 +179,26 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
             {
               label: "Headers",
               key: "headers",
-              children: <Headers detail={detail} />,
+              children: <Headers detail={networkInfo} />,
             },
             {
               label: "Response",
               key: "response",
               children: (
                 <Editor
-                  options={{ readOnly: !detail?.responseBodyParsable }}
+                  options={{ readOnly: !networkInfo?.responseBodyParsable }}
                   theme="vs-dark"
                   language={lang}
                   height={"100%"}
-                  value={detail?.responseBody}
+                  value={networkInfo?.responseBody}
+                  onChange={updateResponseBody}
                 />
               ),
+            },
+            {
+              label: "Rules",
+              key: "rules",
+              children: "rule",
             },
           ]}
         ></Tabs>

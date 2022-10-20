@@ -1,11 +1,26 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { onMessage } from "webext-bridge/devtools";
 import NetworkBrief from "../NetworkBrief";
 import NetWorkDetail from "../NetworkDetail";
-import { NetworkInfo } from 'common/api-interceptor/types';
+import { NetworkInfo } from "common/api-interceptor/types";
+import { rules$ } from "../../../../lib/storage";
+import { isEmpty, mapValues, pickBy } from "lodash";
+import { matchRule } from "common/network-rule";
+import debugFn from "debug";
+import NetworkToolbar from "../NetworkToolbar";
+import { Modal } from "ui";
+import NetworkRules from "../NetworkRules";
+
+const debug = debugFn("Network-Manager");
 
 const useData = () => {
   const [data, setData] = useState<Record<string, NetworkInfo>>({});
+  const noRuleData = useMemo(() => {
+    return pickBy(data, (value) => !value.ruleId);
+  }, [data]);
+  const noRuleDataRef = useRef(noRuleData);
+  noRuleDataRef.current = noRuleData;
+
   useEffect(() => {
     onMessage("request", ({ data: requestData }) => {
       setData((data) => ({ ...data, [requestData.id]: requestData }));
@@ -14,11 +29,35 @@ const useData = () => {
 
   useEffect(() => {
     onMessage("response", ({ data: responseData }) => {
-      setData((data) => ({ ...data, [responseData.id]: responseData }));
+      setData((data) => ({
+        ...data,
+        [responseData.id]: { ...data[responseData.id], ...responseData },
+      }));
     });
   }, []);
 
-  return data;
+  useEffect(() => {
+    const subscription = rules$.subscribe(() => {
+      debug("rules change");
+      const newPartialNetworkInfo = pickBy(
+        mapValues(noRuleDataRef.current, (networkInfo) => {
+          const rule = matchRule(networkInfo);
+          const newNetworkInfo: NetworkInfo | undefined = rule
+            ? { ...networkInfo, ruleId: rule.id }
+            : undefined;
+          return newNetworkInfo;
+        }),
+        (networkInfo) => !!networkInfo
+      ) as Record<string, NetworkInfo>;
+      if (!isEmpty(newPartialNetworkInfo)) {
+        debug("update data when rules change", newPartialNetworkInfo);
+        setData((data) => ({ ...data, ...newPartialNetworkInfo }));
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return [data, setData] as const;
 };
 
 const useCurrentNetworkDetail = (data: Record<string, NetworkInfo>) => {
@@ -40,18 +79,34 @@ const useCurrentNetworkDetail = (data: Record<string, NetworkInfo>) => {
 };
 
 const Network: FC = () => {
-  const data = useData();
+  const [data, setData] = useData();
   const [currentNetworkDetail, setCurrentNetworkDetail] =
     useCurrentNetworkDetail(data);
+  const [rulesVisible, setRulesVisible] = useState(false);
 
   return (
-    <div className="h-full flex">
-      <NetworkBrief
-        data={data}
-        currentNetworkDetail={currentNetworkDetail}
-        setCurrentNetworkDetail={setCurrentNetworkDetail}
+    <div className="h-full flex flex-col">
+      <NetworkToolbar
+        clear={() => setData({})}
+        onOpenRules={() => setRulesVisible(true)}
       />
-      <NetWorkDetail detail={currentNetworkDetail} />
+      <div className="flex flex-1 min-h-0">
+        <NetworkBrief
+          data={data}
+          currentNetworkDetail={currentNetworkDetail}
+          setCurrentNetworkDetail={setCurrentNetworkDetail}
+        />
+        <NetWorkDetail detail={currentNetworkDetail} />
+      </div>
+
+      <Modal
+        title="Rules"
+        open={rulesVisible}
+        footer={null}
+        onCancel={() => setRulesVisible(false)}
+      >
+        <NetworkRules />
+      </Modal>
     </div>
   );
 };

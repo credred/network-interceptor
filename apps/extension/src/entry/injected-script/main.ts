@@ -1,14 +1,19 @@
-import { sendMessage, setNamespace } from 'webext-bridge/window'
-import { networkEmitter, enable } from 'common/api-interceptor';
+import { onMessage, sendMessage, setNamespace } from "webext-bridge/window";
+import { networkEmitter, enable } from "common/api-interceptor";
+import { setRules } from "common/network-rule";
 
-enable()
+enable();
 
-networkEmitter.on('request', (requestInfo) => {
-  void sendMessage('request', requestInfo, 'devtools')
-})
+networkEmitter.on("request", (requestInfo) => {
+  void sendMessage("request", requestInfo, "devtools");
+});
 
-networkEmitter.on('response', (responseInfo) => {
-  void sendMessage('response', responseInfo, 'devtools')
-})
+networkEmitter.on("response", (responseInfo) => {
+  void sendMessage("response", responseInfo, "devtools");
+});
 
-setNamespace('network-interceptor')
+onMessage("rulesChange", (rules) => {
+  setRules(Array.from(Object.values(rules.data)));
+});
+
+setNamespace("network-interceptor");
