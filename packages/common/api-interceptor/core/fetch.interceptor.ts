@@ -1,5 +1,6 @@
 import { isNil, isPlainObject, isString } from "lodash";
 import uid from "tiny-uid";
+import { matchRule } from "../../network-rule";
 import { BLOB_TEXT } from "../constants";
 import { RequestInfo, ResponseInfo } from "../types";
 import { networkEmitter } from "./event-emitter";
@@ -34,13 +35,15 @@ const transformBody = (body?: BodyInit | null) => {
 };
 
 const transformResponseData = (res: Response) => {
-  const contentType = res.headers.get("Content-Type");
+  // body can only be used once. we should clone res
+  const resCloned = res.clone();
+  const contentType = resCloned.headers.get("Content-Type");
   let data = undefined;
   let parsable = true;
   if (contentType === null || contentType === undefined) {
     data = undefined;
   } else if (contentType.includes("json") || contentType.includes("text")) {
-    data = res.text();
+    data = resCloned.text();
   } else {
     data = undefined;
     parsable = false;
@@ -75,24 +78,66 @@ export async function InterceptedFetch(
     requestBody: transformBody(option?.body),
   };
 
+  const rule = matchRule(requestInfo);
+  const networkModifyInfo = rule?.modifyInfo;
+  requestInfo.ruleId = rule?.id;
+
+  if (networkModifyInfo) {
+    init = init || {};
+    const { requestBody, requestHeaders } = networkModifyInfo;
+    if (requestBody) {
+      init.body = requestBody;
+      requestInfo.requestBody = requestBody;
+    }
+    if (requestHeaders) {
+      init.headers = requestHeaders;
+      requestInfo.requestHeaders = requestHeaders;
+    }
+  }
+
   networkEmitter.emit("request", requestInfo);
 
-  const res = await originFetch(input, init);
+  let finalResponse: Response;
+  if (!networkModifyInfo) {
+    // not match rule, fetch target directly
+    finalResponse = await originFetch(input, init);
+  } else if (!networkModifyInfo.continueRequest) {
+    // continue fetch network. modify response
+    const res = await originFetch(input, init);
+    const { status, statusText, responseBody, responseHeaders } =
+      networkModifyInfo;
 
-  const { data, parsable } = transformResponseData(res);
+    finalResponse = new Response(responseBody ?? res.body, {
+      headers: responseHeaders,
+      status,
+      statusText,
+    });
+  } else {
+    // skip fetch network. response directly
+    const { responseBody, responseHeaders, status, statusText } =
+      networkModifyInfo;
+    finalResponse = new Response(responseBody, {
+      headers: responseHeaders,
+      status,
+      statusText,
+    });
+  }
+
+  const { data, parsable } = transformResponseData(finalResponse);
 
   void Promise.resolve(data).then((data) => {
     const responseInfo: ResponseInfo = {
       ...requestInfo,
-      stage: 'response',
-      status: res.status,
-      statusText: res.statusText,
-      responseHeaders: transformHeaders(res.headers),
+      stage: "response",
+      status: finalResponse.status,
+      statusText: finalResponse.statusText,
+      responseHeaders: transformHeaders(finalResponse.headers),
       responseBody: data,
       responseBodyParsable: parsable,
     };
-    return networkEmitter.emit("response", responseInfo);
+
+    networkEmitter.emit("response", responseInfo);
   });
 
-  return res;
+  return finalResponse;
 }

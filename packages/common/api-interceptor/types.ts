@@ -1,5 +1,7 @@
 export interface RequestInfo {
   id: string
+  /** matched rule id */
+  ruleId?: string
   type: 'xhr' | 'fetch'
   stage: 'request'
   url: string
@@ -15,7 +17,7 @@ export interface ResponseInfo extends Omit<RequestInfo, 'stage'> {
   statusText: string
   responseHeaders?: Record<string, string>
   responseBody?: string
-  responseBodyParsable?: boolean
+  responseBodyParsable: boolean
 }
 
 export type NetworkInfo = Omit<RequestInfo, 'stage'> & Partial<Omit<ResponseInfo, 'stage'>> & {
