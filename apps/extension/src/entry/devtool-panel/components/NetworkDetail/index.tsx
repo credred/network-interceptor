@@ -1,7 +1,5 @@
-import * as monaco from "monaco-editor";
-import Editor, { loader } from "@monaco-editor/react";
 import { FC, useEffect, useState } from "react";
-import { Collapse, Tabs } from "ui";
+import { Collapse, Tabs, Editor } from "ui";
 import { NetworkInfo } from "common/api-interceptor";
 import "./index.less";
 import uid from "tiny-uid";
@@ -12,7 +10,6 @@ import debugFn from "debug";
 const debug = debugFn("NetworkDetail");
 debugFn.enable("*");
 
-loader.config({ monaco });
 
 interface NetWorkDetailProps {
   detail: NetworkInfo | undefined;
@@ -189,7 +186,6 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
                   options={{ readOnly: !networkInfo?.responseBodyParsable }}
                   theme="vs-dark"
                   language={lang}
-                  height={"100%"}
                   value={networkInfo?.responseBody}
                   onChange={updateResponseBody}
                 />
