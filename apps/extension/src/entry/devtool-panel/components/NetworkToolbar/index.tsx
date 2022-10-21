@@ -1,4 +1,4 @@
-import { Button } from "ui";
+import { Button, Checkbox } from "ui";
 import {
   ClearOutlined,
   StopOutlined,
@@ -10,6 +10,7 @@ import { FC } from "react";
 interface NetworkToolbarProps {
   clear: () => void;
   onOpenRules: () => void;
+  toggleRecord: (enabled: boolean) => void;
 }
 
 const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
@@ -17,10 +18,11 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
     clear: () => props.clear(),
     onOpenRules: () => props.onOpenRules(),
     clearRules: () => void clearRules(),
+    toggleRecord: (enabled: boolean) => props.toggleRecord(enabled),
   };
 
   return (
-    <div>
+    <div className="flex items-center">
       <Button type="link" title="clear" onClick={actions.clear}>
         <StopOutlined />
       </Button>
@@ -30,6 +32,7 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
       <Button type="link" title="show rules" onClick={actions.onOpenRules}>
         <UnorderedListOutlined />
       </Button>
+      <Checkbox onChange={(e) => actions.toggleRecord(e.target.checked)}>Request To Rule</Checkbox>
     </div>
   );
 };

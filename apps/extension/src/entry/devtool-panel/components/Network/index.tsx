@@ -3,23 +3,24 @@ import { onMessage } from "webext-bridge/devtools";
 import NetworkBrief from "../NetworkBrief";
 import NetWorkDetail from "../NetworkDetail";
 import { NetworkInfo } from "common/api-interceptor/types";
-import { rules$ } from "../../../../lib/storage";
+import { rules$, saveRule } from "../../../../lib/storage";
 import { isEmpty, mapValues, pickBy } from "lodash";
-import { matchRule } from "common/network-rule";
+import { initRuleByNetworkInfo, matchRule } from "common/network-rule";
 import debugFn from "debug";
 import NetworkToolbar from "../NetworkToolbar";
 import { Modal } from "ui";
 import NetworkRules from "../NetworkRules";
-
+import { useMemoizedFn } from 'ahooks';
 const debug = debugFn("Network-Manager");
 
-const useData = () => {
+const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
   const [data, setData] = useState<Record<string, NetworkInfo>>({});
   const noRuleData = useMemo(() => {
     return pickBy(data, (value) => !value.ruleId);
   }, [data]);
   const noRuleDataRef = useRef(noRuleData);
   noRuleDataRef.current = noRuleData;
+  const memoizedOnReceive = useMemoizedFn(onReceive)
 
   useEffect(() => {
     onMessage("request", ({ data: requestData }) => {
@@ -29,10 +30,14 @@ const useData = () => {
 
   useEffect(() => {
     onMessage("response", ({ data: responseData }) => {
-      setData((data) => ({
-        ...data,
-        [responseData.id]: { ...data[responseData.id], ...responseData },
-      }));
+      setData((data) => {
+        const networkInfo = { ...data[responseData.id], ...responseData }
+        memoizedOnReceive(networkInfo)
+        return ({
+          ...data,
+          [networkInfo.id]: networkInfo,
+        })
+      });
     });
   }, []);
 
@@ -79,7 +84,14 @@ const useCurrentNetworkDetail = (data: Record<string, NetworkInfo>) => {
 };
 
 const Network: FC = () => {
-  const [data, setData] = useData();
+  const [enableRecord, setEnableRecord] = useState(false)
+  
+  const [data, setData] = useData((networkInfo) => {
+    if (enableRecord && !networkInfo.ruleId) {
+      const rule = initRuleByNetworkInfo(networkInfo)
+      void saveRule(rule)
+    }
+  });
   const [currentNetworkDetail, setCurrentNetworkDetail] =
     useCurrentNetworkDetail(data);
   const [rulesVisible, setRulesVisible] = useState(false);
@@ -88,6 +100,7 @@ const Network: FC = () => {
     <div className="h-full flex flex-col">
       <NetworkToolbar
         clear={() => setData({})}
+        toggleRecord={setEnableRecord}
         onOpenRules={() => setRulesVisible(true)}
       />
       <div className="flex flex-1 min-h-0">
