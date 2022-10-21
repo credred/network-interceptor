@@ -2,9 +2,8 @@ import { FC, useEffect, useState } from "react";
 import { Collapse, Tabs, Editor } from "ui";
 import { NetworkInfo } from "common/api-interceptor";
 import "./index.less";
-import uid from "tiny-uid";
 import { getRuleById, saveRule } from "../../../../lib/storage";
-import { NetworkRule } from "common/network-rule";
+import { initRuleByNetworkInfo, NetworkRule } from "common/network-rule";
 import { usePrevious, useMemoizedFn } from "ahooks";
 import debugFn from "debug";
 const debug = debugFn("NetworkDetail");
@@ -118,23 +117,7 @@ const useRule = (networkInfo?: NetworkInfo) => {
         if (networkInfo.ruleId) {
           partialRule = await getRuleById(networkInfo.ruleId);
         }
-        const requestUrl = new URL(networkInfo.url);
-        const rule: NetworkRule = {
-          ...partialRule,
-          version: 1,
-          id: partialRule?.id ?? uid(),
-          baseMatchRule: partialRule?.baseMatchRule ?? {
-            method: networkInfo.method,
-            path: requestUrl.pathname,
-          },
-          advanceMatchRules: partialRule?.advanceMatchRules || [],
-          modifyInfo: partialRule?.modifyInfo || {
-            continueRequest: false,
-            status: 200,
-            responseHeaders: networkInfo.responseHeaders,
-            statusText: "OK",
-          },
-        };
+        const rule = initRuleByNetworkInfo(networkInfo, partialRule);
         debug("init rule", rule);
 
         setRule(rule);
