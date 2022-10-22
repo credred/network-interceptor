@@ -2,6 +2,7 @@ import { FC, useMemo } from "react";
 import { Table, TableColumnsType } from "ui";
 import classNames from "classnames";
 import { NetworkInfo } from "common/api-interceptor";
+import { isEmpty } from 'lodash';
 
 interface NetworkBriefProps {
   data: Record<string, NetworkInfo>;
@@ -26,6 +27,7 @@ const column: TableColumnsType<NetworkInfo> = [
     title: "Method",
     dataIndex: "method",
     key: "method",
+    width: 80,
   },
   {
     title: "Status",
@@ -44,7 +46,8 @@ const NetworkBrief: FC<NetworkBriefProps> = (props) => {
   const dataSource = useMemo(() => Array.from(Object.values(data)), [data]);
 
   return (
-    <Table<NetworkInfo>
+    <>
+    {!isEmpty(dataSource) ? <Table<NetworkInfo>
       rowKey="id"
       dataSource={dataSource}
       onRow={(record) => {
@@ -62,7 +65,11 @@ const NetworkBrief: FC<NetworkBriefProps> = (props) => {
       size="small"
       pagination={false}
       columns={column}
-    ></Table>
+    ></Table> : <div className="h-full flex justify-center items-center flex-col flex-1">
+        <div>Recording network activity...</div>
+        <div>Perform a request or reload</div>
+      </div>}
+    </>
   );
 };
 
