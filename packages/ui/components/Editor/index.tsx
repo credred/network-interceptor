@@ -3,7 +3,7 @@ import MonacoEditor, { loader } from "@monaco-editor/react";
 import type * as EditorType from "@monaco-editor/react";
 import { FC, useRef } from "react";
 import { Button } from "antd";
-import { usePrevious } from "ahooks";
+import { useMemoizedFn } from "ahooks";
 
 loader.config({ monaco });
 
@@ -20,13 +20,6 @@ const Editor: FC<EditorProps> = (props) => {
   const { toolbar = true, onValueChange, ...restProps } = props;
   const { value } = props
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
-  const isUserInputRef = useRef(true)
-
-  const previousValue = usePrevious(value)
-
-  if (value !== previousValue) {
-    isUserInputRef.current = false
-  }
 
   const formatCode = () => {
     void editorRef.current?.getAction("editor.action.formatDocument")?.run();
@@ -37,14 +30,12 @@ const Editor: FC<EditorProps> = (props) => {
     props.onMount?.(editor, monaco);
   };
 
-  const onChange: EditorType.OnChange = (newValue, ev) => {
-    if (isUserInputRef.current) {
+  const onChange: EditorType.OnChange = useMemoizedFn((newValue, ev) => {
+    if (newValue !== value) {
       props.onChange?.(newValue, ev);
-    } else {
-      isUserInputRef.current = true
     }
     onValueChange?.(newValue, ev);
-  };
+  });
 
   return (
     <div className="h-full flex flex-col">
