@@ -101,7 +101,7 @@ export async function InterceptedFetch(
   if (!networkModifyInfo) {
     // not match rule, fetch target directly
     finalResponse = await originFetch(input, init);
-  } else if (!networkModifyInfo.continueRequest) {
+  } else if (networkModifyInfo.continueRequest) {
     // continue fetch network. modify response
     const res = await originFetch(input, init);
     const { status, statusText, responseBody, responseHeaders } =
