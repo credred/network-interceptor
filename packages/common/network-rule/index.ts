@@ -6,6 +6,11 @@ import { NetworkRule } from "./types";
 export * from "./types";
 
 let rules: NetworkRule[] = [];
+let disabled = false
+
+export const disableRule = (newDisabled: boolean) => {
+  disabled = newDisabled
+};
 
 export const setRules = (newRules: NetworkRule[]) => {
   rules = newRules;
@@ -32,6 +37,7 @@ export const matchRules = (request: NetworkInfo) => {
 };
 
 export const matchRule = (request: NetworkInfo) => {
+  if (disabled) return;
   for (const rule of rules) {
     if (match(request, rule)) {
       return rule;

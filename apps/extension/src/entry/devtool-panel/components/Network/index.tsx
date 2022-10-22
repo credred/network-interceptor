@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
-import { onMessage } from "webext-bridge/devtools";
+import { onMessage, sendMessage } from "webext-bridge/devtools";
 import NetworkBrief from "../NetworkBrief";
 import NetWorkDetail from "../NetworkDetail";
 import { NetworkInfo } from "common/api-interceptor/types";
@@ -10,7 +10,7 @@ import debugFn from "debug";
 import NetworkToolbar from "../NetworkToolbar";
 import { Modal } from "ui";
 import NetworkRules from "../NetworkRules";
-import { useMemoizedFn } from 'ahooks';
+import { useMemoizedFn, useMount } from 'ahooks';
 const debug = debugFn("Network-Manager");
 
 const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
@@ -85,6 +85,7 @@ const useCurrentNetworkDetail = (data: Record<string, NetworkInfo>) => {
 
 const Network: FC = () => {
   const [enableRecord, setEnableRecord] = useState(false)
+  const ruleDisabled = useRef(false)
   
   const [data, setData] = useData((networkInfo) => {
     if (enableRecord && !networkInfo.ruleId) {
@@ -96,12 +97,26 @@ const Network: FC = () => {
     useCurrentNetworkDetail(data);
   const [rulesVisible, setRulesVisible] = useState(false);
 
+  useMount(() => {
+    onMessage("pageLoad", () => {
+      if (ruleDisabled.current) {
+        void sendMessage('disableRule', ruleDisabled.current, 'window')
+      }
+    })
+  })
+
+  const disableRule = (disabled: boolean) => {
+    ruleDisabled.current = disabled
+    void sendMessage('disableRule', disabled, 'window')
+  }
+
   return (
     <div className="h-full flex flex-col">
       <NetworkToolbar
         clear={() => setData({})}
         toggleRecord={setEnableRecord}
         onOpenRules={() => setRulesVisible(true)}
+        disableRule={disableRule}
       />
       <div className="flex flex-1 min-h-0">
         <NetworkBrief
