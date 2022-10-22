@@ -169,7 +169,7 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
                   options={{ readOnly: !networkInfo?.responseBodyParsable }}
                   theme="vs-dark"
                   language={lang}
-                  value={networkInfo?.responseBody}
+                  value={networkInfo?.responseBody ?? ''}
                   onChange={updateResponseBody}
                 />
               ),
