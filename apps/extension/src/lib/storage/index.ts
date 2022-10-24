@@ -42,9 +42,9 @@ export const clearRules = () => {
 
 const getAllRules = async () => {
   const res = (await storage.get(StorageKey.RULES)) as {
-    [StorageKey.RULES]: Record<string, NetworkRule>;
+    [StorageKey.RULES]: Record<string, NetworkRule> | undefined;
   };
-  return res.rules;
+  return res.rules || {};
 };
 
 export const getRuleById = async (
@@ -60,7 +60,7 @@ const onRulesChange = (callback: (rules: Record<string, NetworkRule>) => void) =
   const listener: Parameters<typeof storage.onChanged.addListener>[0] = (changes) => {
     if (changes.rules) {
       debug('rules change', changes.rules)
-      callback((changes.rules as Storage.StorageChange).newValue as Record<string, NetworkRule>)
+      callback(((changes.rules as Storage.StorageChange).newValue || {}) as Record<string, NetworkRule>)
     }
   }
   storage.onChanged.addListener(listener)
