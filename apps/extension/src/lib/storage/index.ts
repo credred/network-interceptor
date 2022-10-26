@@ -7,7 +7,7 @@ import { omit } from 'lodash';
 
 const debug = debugFn("storage");
 
-const storage = Browser.storage.sync;
+const storage = Browser.storage.local;
 
 export const saveRule = async (rule: NetworkRule) => {
   const rules = await firstValueFrom(rules$);
