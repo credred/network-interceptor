@@ -1,7 +1,7 @@
 import { match as pathMath } from "path-to-regexp";
 import uid from 'tiny-uid';
 import { NetworkInfo } from "../api-interceptor";
-import { NetworkRule } from "./types";
+import { NetworkModifyInfo, NetworkRule } from "./types";
 
 export * from "./types";
 
@@ -58,12 +58,18 @@ export const initRuleByNetworkInfo = (networkInfo: NetworkInfo, partialRule?: Pa
     advanceMatchRules: partialRule?.advanceMatchRules || [],
     modifyInfo: partialRule?.modifyInfo || {
       continueRequest: false,
-      status: 200,
-      responseBody: networkInfo.responseBody,
-      responseHeaders: networkInfo.responseHeaders,
-      statusText: "OK",
+      response: {
+        status: 200,
+        responseBody: networkInfo.responseBody,
+        responseHeaders: networkInfo.responseHeaders,
+        statusText: "OK",
+      }
     },
   };
 };
+
+export const shouldContinueRequest = (networkModifyInfo?: NetworkModifyInfo) => {
+  return !networkModifyInfo || networkModifyInfo.continueRequest || !networkModifyInfo.response
+}
 
 export type { NetworkRule };

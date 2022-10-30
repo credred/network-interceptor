@@ -1,3 +1,5 @@
+import { NetworkRule } from "../network-rule"
+
 export interface RequestInfo {
   id: string
   /** matched rule id */
@@ -8,9 +10,11 @@ export interface RequestInfo {
   method: string
   requestHeaders?: Record<string, string>
   requestBody?: string
+  originRequestHeaders?: Record<string, string>
+  originRequestBody?: string
 }
 
-export interface ResponseInfo extends Omit<RequestInfo, 'stage'> {
+export interface ResponseInfo {
   id: string
   stage: 'response'
   status: number
@@ -18,6 +22,8 @@ export interface ResponseInfo extends Omit<RequestInfo, 'stage'> {
   responseHeaders?: Record<string, string>
   responseBody?: string
   responseBodyParsable: boolean
+  originResponseHeaders?: Record<string, string>
+  originResponseBody?: string
 }
 
 export type NetworkInfo = Omit<RequestInfo, 'stage'> & Partial<Omit<ResponseInfo, 'stage'>> & {
@@ -26,14 +32,6 @@ export type NetworkInfo = Omit<RequestInfo, 'stage'> & Partial<Omit<ResponseInfo
 
 export type StrongNetworkInfo = RequestInfo | ResponseInfo
 
-export interface NetworkEmitterEventMap {
-  request: RequestInfo
-  response: ResponseInfo
-}
-
-export declare class NetworkEmitter {
-  on<K extends keyof NetworkEmitterEventMap>(event: K, listener: (ev: NetworkEmitterEventMap[K]) => void, ctx?: any): this;
-  once<K extends keyof NetworkEmitterEventMap>(event: K, listener: (ev: NetworkEmitterEventMap[K]) => void, ctx?: any): this;
-  emit<K extends keyof NetworkEmitterEventMap>(event: K, eventInfo: NetworkEmitterEventMap[K]): this;
-  off<K extends keyof NetworkEmitterEventMap>(event: K, listener?: (ev: NetworkEmitterEventMap[K]) => void): this;
-}
+export type MatchRule = (requestInfo: RequestInfo) => Promise<NetworkRule | undefined>
+export type RequestWillBeSent = (requestInfo: RequestInfo) => void
+export type ResponseReceived = (responseInfo: ResponseInfo) => void

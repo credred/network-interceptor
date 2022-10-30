@@ -1,26 +1,21 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { onMessage, sendMessage } from "webext-bridge/devtools";
 import NetworkBrief from "../NetworkBrief";
 import NetWorkDetail from "../NetworkDetail";
 import { NetworkInfo } from "common/api-interceptor/types";
 import { rules$, saveRule } from "../../../../lib/storage";
-import { isEmpty, mapValues, pickBy } from "lodash";
+import { mapValues } from "lodash";
 import { initRuleByNetworkInfo, matchRule } from "common/network-rule";
 import debugFn from "debug";
 import NetworkToolbar from "../NetworkToolbar";
 import { Modal } from "ui";
 import NetworkRules from "../NetworkRules";
-import { useMemoizedFn, useMount } from 'ahooks';
+import { useMemoizedFn, useMount } from "ahooks";
 const debug = debugFn("Network-Manager");
 
 const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
   const [data, setData] = useState<Record<string, NetworkInfo>>({});
-  const noRuleData = useMemo(() => {
-    return pickBy(data, (value) => !value.ruleId);
-  }, [data]);
-  const noRuleDataRef = useRef(noRuleData);
-  noRuleDataRef.current = noRuleData;
-  const memoizedOnReceive = useMemoizedFn(onReceive)
+  const memoizedOnReceive = useMemoizedFn(onReceive);
 
   useEffect(() => {
     onMessage("request", ({ data: requestData }) => {
@@ -31,33 +26,31 @@ const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
   useEffect(() => {
     onMessage("response", ({ data: responseData }) => {
       setData((data) => {
-        const networkInfo = { ...data[responseData.id], ...responseData }
-        memoizedOnReceive(networkInfo)
-        return ({
+        const networkInfo = { ...data[responseData.id], ...responseData };
+        memoizedOnReceive(networkInfo);
+        return {
           ...data,
           [networkInfo.id]: networkInfo,
-        })
+        };
       });
     });
   }, []);
 
   useEffect(() => {
     const subscription = rules$.subscribe(() => {
-      debug("rules change");
-      const newPartialNetworkInfo = pickBy(
-        mapValues(noRuleDataRef.current, (networkInfo) => {
+      debug("apply ruleId to oldData when rules change");
+      setData((data) =>
+        mapValues(data, (networkInfo) => {
+          if (networkInfo.ruleId) {
+            return networkInfo;
+          }
           const rule = matchRule(networkInfo);
-          const newNetworkInfo: NetworkInfo | undefined = rule
-            ? { ...networkInfo, ruleId: rule.id }
-            : undefined;
-          return newNetworkInfo;
-        }),
-        (networkInfo) => !!networkInfo
-      ) as Record<string, NetworkInfo>;
-      if (!isEmpty(newPartialNetworkInfo)) {
-        debug("update data when rules change", newPartialNetworkInfo);
-        setData((data) => ({ ...data, ...newPartialNetworkInfo }));
+          if (rule) {
+            return { ...networkInfo, ruleId: rule.id };
       }
+          return networkInfo;
+        })
+      );
     });
     return () => subscription.unsubscribe();
   }, []);

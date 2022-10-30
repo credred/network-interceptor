@@ -1,6 +1,7 @@
-import { RequestInfo, ResponseInfo } from "common/api-interceptor"
+import { NetworkInfo, RequestInfo, ResponseInfo } from "common/api-interceptor"
 import { NetworkRule } from 'common/network-rule'
 import 'webext-bridge'
+import { ProtocolWithReturn } from "webext-bridge"
 
 declare module 'webext-bridge' {
   export interface ProtocolMap {
@@ -9,5 +10,6 @@ declare module 'webext-bridge' {
     pageLoad: void
     request: RequestInfo
     response: ResponseInfo
+    matchRule: ProtocolWithReturn<NetworkInfo, NetworkRule | undefined>
   }
 }

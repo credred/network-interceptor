@@ -136,7 +136,10 @@ const useRuleForUpdate = (rule?: NetworkRule) => {
     if (!rule) return;
     void saveRule({
       ...rule,
-      modifyInfo: { ...rule.modifyInfo, responseBody: body },
+      modifyInfo: { ...rule.modifyInfo, response: {
+        ...rule.modifyInfo.response,
+        responseBody: body,
+      } },
     });
   });
 

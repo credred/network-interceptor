@@ -14,13 +14,17 @@ export interface NetworkBaseMatchRule {
 
 export interface NetworkModifyInfo {
   continueRequest?: boolean
-  status: number
-  statusText: string
-  redirectUrl?: string
-  requestHeaders?: Record<string, string>
-  requestBody?: string
-  responseHeaders?: Record<string, string>
-  responseBody?: string
+  request?: {
+    redirectUrl?: string
+    requestBody?: string
+    requestHeaders?: Record<string, string>
+  }
+  response?: {
+    status?: number
+    statusText?: string
+    responseHeaders?: Record<string, string>
+    responseBody?: string
+  }
 }
 
 export interface NetworkRule {
