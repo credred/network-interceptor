@@ -1,9 +1,15 @@
 import { NetworkRule } from "common/network-rule";
 import Browser, { Storage } from "webextension-polyfill";
 import { StorageKey } from "./constants";
-import { firstValueFrom, from, fromEventPattern, merge, shareReplay } from "rxjs";
+import {
+  firstValueFrom,
+  from,
+  fromEventPattern,
+  merge,
+  shareReplay,
+} from "rxjs";
 import debugFn from "debug";
-import { omit } from 'lodash';
+import { omit } from "lodash";
 
 const debug = debugFn("storage");
 
@@ -12,9 +18,9 @@ const storage = Browser.storage.local;
 export const saveRule = async (rule: NetworkRule) => {
   const rules = await firstValueFrom(rules$);
   if (rules[rule.id]) {
-    debug('update rule', rule)
+    debug("update rule", rule);
   } else {
-    debug('add rule', rule)
+    debug("add rule", rule);
   }
   await storage.set({
     [StorageKey.RULES]: {
@@ -25,7 +31,6 @@ export const saveRule = async (rule: NetworkRule) => {
 };
 
 export const deleteRule = async (ruleId: string) => {
-  
   const rules = await firstValueFrom(rules$);
   debug("delete rule", rules[ruleId]);
   await storage.set({
@@ -34,11 +39,11 @@ export const deleteRule = async (ruleId: string) => {
 };
 
 export const clearRules = () => {
-  debug("clear rule")
+  debug("clear rule");
   return storage.set({
-    [StorageKey.RULES]: {}
-  })
-}
+    [StorageKey.RULES]: {},
+  });
+};
 
 const getAllRules = async () => {
   const res = (await storage.get(StorageKey.RULES)) as {
@@ -52,29 +57,39 @@ export const getRuleById = async (
 ): Promise<Partial<NetworkRule>> => {
   const rules = await firstValueFrom(rules$);
   const rule = rules?.[ruleId] || {};
-  debug('get rule', rule)
-  return rule
+  debug("get rule", rule);
+  return rule;
 };
 
-const onRulesChange = (callback: (rules: Record<string, NetworkRule>) => void) => {
-  const listener: Parameters<typeof storage.onChanged.addListener>[0] = (changes) => {
+const onRulesChange = (
+  callback: (rules: Record<string, NetworkRule>) => void
+) => {
+  const listener: Parameters<typeof storage.onChanged.addListener>[0] = (
+    changes
+  ) => {
     if (changes.rules) {
-      debug('rules change', changes.rules)
-      callback(((changes.rules as Storage.StorageChange).newValue || {}) as Record<string, NetworkRule>)
+      debug("rules change", changes.rules);
+      callback(
+        ((changes.rules as Storage.StorageChange).newValue || {}) as Record<
+          string,
+          NetworkRule
+        >
+      );
     }
-  }
-  storage.onChanged.addListener(listener)
+  };
+  storage.onChanged.addListener(listener);
 
   return () => {
-    storage.onChanged.removeListener(listener)
-  }
-}
+    storage.onChanged.removeListener(listener);
+  };
+};
 
-const rulesByGet$ = from(getAllRules())
-const rulesByListener$ = fromEventPattern<Record<string, NetworkRule>>(onRulesChange, (handler) => handler())
+const rulesByGet$ = from(getAllRules());
+const rulesByListener$ = fromEventPattern<Record<string, NetworkRule>>(
+  onRulesChange,
+  (handler) => handler()
+);
 
-const rules$ = merge(rulesByGet$, rulesByListener$).pipe(
-  shareReplay(1)
-)
+const rules$ = merge(rulesByGet$, rulesByListener$).pipe(shareReplay(1));
 
-export { rules$ }
+export { rules$ };

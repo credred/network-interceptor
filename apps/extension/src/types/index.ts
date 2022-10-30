@@ -1,3 +1,3 @@
-import { NetworkRule } from 'common/network-rule';
+import { NetworkRule } from "common/network-rule";
 
-export type CreateNetworkRuleParam = Omit<NetworkRule, 'id'>
+export type CreateNetworkRuleParam = Omit<NetworkRule, "id">;

@@ -2,7 +2,7 @@ import { FC, useMemo } from "react";
 import { Table, TableColumnsType } from "ui";
 import classNames from "classnames";
 import { NetworkInfo } from "common/api-interceptor";
-import { isEmpty } from 'lodash';
+import { isEmpty } from "lodash";
 
 interface NetworkBriefProps {
   data: Record<string, NetworkInfo>;
@@ -47,28 +47,33 @@ const NetworkBrief: FC<NetworkBriefProps> = (props) => {
 
   return (
     <>
-    {!isEmpty(dataSource) ? <Table<NetworkInfo>
-      rowKey="id"
-      dataSource={dataSource}
-      onRow={(record) => {
-        return {
-          className: classNames(
-            record.id === currentNetworkDetail?.id && "ant-table-row-selected"
-          ),
-          onClick: () => {
-            setCurrentNetworkDetail(record);
-          },
-        };
-      }}
-      scroll={{ y: "100%", x: "auto" }}
-      bordered
-      size="small"
-      pagination={false}
-      columns={column}
-    ></Table> : <div className="h-full flex justify-center items-center flex-col flex-1">
-        <div>Recording network activity...</div>
-        <div>Perform a request or reload</div>
-      </div>}
+      {!isEmpty(dataSource) ? (
+        <Table<NetworkInfo>
+          rowKey="id"
+          dataSource={dataSource}
+          onRow={(record) => {
+            return {
+              className: classNames(
+                record.id === currentNetworkDetail?.id &&
+                  "ant-table-row-selected"
+              ),
+              onClick: () => {
+                setCurrentNetworkDetail(record);
+              },
+            };
+          }}
+          scroll={{ y: "100%", x: "auto" }}
+          bordered
+          size="small"
+          pagination={false}
+          columns={column}
+        ></Table>
+      ) : (
+        <div className="h-full flex justify-center items-center flex-col flex-1">
+          <div>Recording network activity...</div>
+          <div>Perform a request or reload</div>
+        </div>
+      )}
     </>
   );
 };

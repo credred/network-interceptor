@@ -1,15 +1,15 @@
 import { match as pathMath } from "path-to-regexp";
-import uid from 'tiny-uid';
+import uid from "tiny-uid";
 import { NetworkInfo } from "../api-interceptor";
 import { NetworkModifyInfo, NetworkRule } from "./types";
 
 export * from "./types";
 
 let rules: NetworkRule[] = [];
-let disabled = false
+let disabled = false;
 
 export const disableRule = (newDisabled: boolean) => {
-  disabled = newDisabled
+  disabled = newDisabled;
 };
 
 export const setRules = (newRules: NetworkRule[]) => {
@@ -45,7 +45,10 @@ export const matchRule = (request: NetworkInfo) => {
   }
 };
 
-export const initRuleByNetworkInfo = (networkInfo: NetworkInfo, partialRule?: Partial<NetworkRule>): NetworkRule => {
+export const initRuleByNetworkInfo = (
+  networkInfo: NetworkInfo,
+  partialRule?: Partial<NetworkRule>
+): NetworkRule => {
   const requestUrl = new URL(networkInfo.url);
   return {
     ...partialRule,
@@ -63,13 +66,19 @@ export const initRuleByNetworkInfo = (networkInfo: NetworkInfo, partialRule?: Pa
         responseBody: networkInfo.responseBody,
         responseHeaders: networkInfo.responseHeaders,
         statusText: "OK",
-      }
+      },
     },
   };
 };
 
-export const shouldContinueRequest = (networkModifyInfo?: NetworkModifyInfo) => {
-  return !networkModifyInfo || networkModifyInfo.continueRequest || !networkModifyInfo.response
-}
+export const shouldContinueRequest = (
+  networkModifyInfo?: NetworkModifyInfo
+) => {
+  return (
+    !networkModifyInfo ||
+    networkModifyInfo.continueRequest ||
+    !networkModifyInfo.response
+  );
+};
 
 export type { NetworkRule };

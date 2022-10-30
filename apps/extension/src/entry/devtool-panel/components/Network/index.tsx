@@ -47,7 +47,7 @@ const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
           const rule = matchRule(networkInfo);
           if (rule) {
             return { ...networkInfo, ruleId: rule.id };
-      }
+          }
           return networkInfo;
         })
       );
@@ -77,13 +77,13 @@ const useCurrentNetworkDetail = (data: Record<string, NetworkInfo>) => {
 };
 
 const Network: FC = () => {
-  const [enableRecord, setEnableRecord] = useState(false)
-  const ruleDisabled = useRef(false)
-  
+  const [enableRecord, setEnableRecord] = useState(false);
+  const ruleDisabled = useRef(false);
+
   const [data, setData] = useData((networkInfo) => {
     if (enableRecord && !networkInfo.ruleId) {
-      const rule = initRuleByNetworkInfo(networkInfo)
-      void saveRule(rule)
+      const rule = initRuleByNetworkInfo(networkInfo);
+      void saveRule(rule);
     }
   });
   const [currentNetworkDetail, setCurrentNetworkDetail] =
@@ -93,15 +93,15 @@ const Network: FC = () => {
   useMount(() => {
     onMessage("pageLoad", () => {
       if (ruleDisabled.current) {
-        void sendMessage('disableRule', ruleDisabled.current, 'window')
+        void sendMessage("disableRule", ruleDisabled.current, "window");
       }
-    })
-  })
+    });
+  });
 
   const disableRule = (disabled: boolean) => {
-    ruleDisabled.current = disabled
-    void sendMessage('disableRule', disabled, 'window')
-  }
+    ruleDisabled.current = disabled;
+    void sendMessage("disableRule", disabled, "window");
+  };
 
   return (
     <div className="h-full flex flex-col">

@@ -34,8 +34,12 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
       <Button type="link" title="show rules" onClick={actions.onOpenRules}>
         <UnorderedListOutlined />
       </Button>
-      <Checkbox onChange={(e) => actions.toggleRecord(e.target.checked)}>Request To Rule</Checkbox>
-      <Checkbox onChange={(e) => actions.disableRule(e.target.checked)}>Disable Rule</Checkbox>
+      <Checkbox onChange={(e) => actions.toggleRecord(e.target.checked)}>
+        Request To Rule
+      </Checkbox>
+      <Checkbox onChange={(e) => actions.disableRule(e.target.checked)}>
+        Disable Rule
+      </Checkbox>
     </div>
   );
 };

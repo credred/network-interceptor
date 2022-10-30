@@ -9,7 +9,6 @@ import debugFn from "debug";
 const debug = debugFn("NetworkDetail");
 debugFn.enable("*");
 
-
 interface NetWorkDetailProps {
   detail: NetworkInfo | undefined;
 }
@@ -136,10 +135,13 @@ const useRuleForUpdate = (rule?: NetworkRule) => {
     if (!rule) return;
     void saveRule({
       ...rule,
-      modifyInfo: { ...rule.modifyInfo, response: {
-        ...rule.modifyInfo.response,
-        responseBody: body,
-      } },
+      modifyInfo: {
+        ...rule.modifyInfo,
+        response: {
+          ...rule.modifyInfo.response,
+          responseBody: body,
+        },
+      },
     });
   });
 
@@ -172,7 +174,7 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
                   options={{ readOnly: !networkInfo?.responseBodyParsable }}
                   theme="vs-dark"
                   language={lang}
-                  value={networkInfo?.responseBody ?? ''}
+                  value={networkInfo?.responseBody ?? ""}
                   onChange={updateResponseBody}
                 />
               ),

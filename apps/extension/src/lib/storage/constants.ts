@@ -1,3 +1,3 @@
 export enum StorageKey {
-  RULES = 'rules'
+  RULES = "rules",
 }

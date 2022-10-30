@@ -1,2 +1,1 @@
-export const BLOB_TEXT = '-- blob --'
-
+export const BLOB_TEXT = "-- blob --";

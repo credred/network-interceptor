@@ -28,7 +28,7 @@ const Tabs = (props: TabsProps) => {
 
 Tabs.defaultProps = {
   fullHeight: true,
-}
+};
 
 Tabs.TabPane = AntTabs.TabPane;
 

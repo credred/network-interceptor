@@ -4,29 +4,29 @@ import type * as EditorType from "@monaco-editor/react";
 import { FC, useRef } from "react";
 import { Button } from "antd";
 import { useMemoizedFn } from "ahooks";
-import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker"
-import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker"
-import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker"
-import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker"
-import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker"
+import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
+import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
+import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
+import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
     if (label === "json") {
-      return new jsonWorker()
+      return new jsonWorker();
     }
     if (label === "css" || label === "scss" || label === "less") {
-      return new cssWorker()
+      return new cssWorker();
     }
     if (label === "html" || label === "handlebars" || label === "razor") {
-      return new htmlWorker()
+      return new htmlWorker();
     }
     if (label === "typescript" || label === "javascript") {
-      return new tsWorker()
+      return new tsWorker();
     }
-    return new editorWorker()
-  }
-}
+    return new editorWorker();
+  },
+};
 
 loader.config({ monaco });
 
@@ -41,7 +41,7 @@ interface EditorProps extends EditorType.EditorProps {
 
 const Editor: FC<EditorProps> = (props) => {
   const { toolbar = true, onValueChange, ...restProps } = props;
-  const { value } = props
+  const { value } = props;
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
 
   const formatCode = () => {
