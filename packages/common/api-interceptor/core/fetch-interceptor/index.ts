@@ -2,37 +2,30 @@ import {
   NetworkModifyInfo,
   shouldContinueRequest,
 } from "../../../network-rule";
-import {
-  MatchRule,
-  RequestWillBeSent,
-  ResponseInfo,
-  ResponseReceived,
-} from "../../types";
+import { interceptorConfig, ResponseInfo } from "../../types";
 import {
   applyModifyInfoToRequestInfo,
   applyModifyInfoToResponseInfo,
-  generateRequestInfoByFetchOption,
+  generateRequestInfoByFetchRequest,
   generateResponseInfoByFetchResponse,
   generateResponseInfoByModifyInfo,
 } from "./utils";
 
-const generateFetchOptionsByModifyInfo = (
+const generateRequestByModifyInfo = (
   requestModifyInfo: NetworkModifyInfo["request"],
-  input: Request | string | URL,
-  init?: RequestInit
-) => {
+  oldRequest: Request
+): Request => {
   if (requestModifyInfo) {
     const { requestBody, requestHeaders } = requestModifyInfo;
-    init = init || {};
-    if (requestBody) {
-      init.body = requestBody;
-    }
-    if (requestHeaders) {
-      init.headers = requestHeaders;
-    }
+    const newRequest = new Request(oldRequest, {
+      body: requestBody ?? oldRequest.body,
+      headers: requestHeaders ?? oldRequest.headers,
+    });
+
+    return newRequest;
   }
 
-  return [input, init] as const;
+  return oldRequest;
 };
 
 const generateFetchResponseByModifyInfo = (
@@ -55,37 +48,34 @@ const generateFetchResponseByModifyInfo = (
 
 export const createInterceptedFetch = (
   originFetch: typeof fetch,
-  callback: {
-    matchRule: MatchRule;
-    requestWillBeSent: RequestWillBeSent;
-    responseReceived: ResponseReceived;
-  }
+  config: interceptorConfig
 ) => {
   async function interceptedFetch(
     input: Request | string | URL,
     init?: RequestInit
   ): Promise<Response> {
-    const originRequestInfo = generateRequestInfoByFetchOption(input, init);
+    const request = new Request(input, init);
+
+    const originRequestInfo = await generateRequestInfoByFetchRequest(request);
     const requestId = originRequestInfo.id;
-    const rule = await callback.matchRule(originRequestInfo);
+    const rule = await config.matchRule(originRequestInfo);
     const networkModifyInfo = rule?.modifyInfo;
     const requestInfo = applyModifyInfoToRequestInfo(
       originRequestInfo,
       networkModifyInfo?.request,
-      rule?.id,
+      rule?.id
     );
-    callback.requestWillBeSent(requestInfo);
-
-    [input, init] = generateFetchOptionsByModifyInfo(
-      networkModifyInfo?.request,
-      input,
-      init
-    );
+    config.requestWillBeSent(requestInfo);
 
     let response: Response | undefined = undefined;
     let responseInfo: ResponseInfo;
     if (shouldContinueRequest(networkModifyInfo)) {
-      response = await originFetch(input, init);
+      const newRequest = generateRequestByModifyInfo(
+        networkModifyInfo?.request,
+        request
+      );
+
+      response = await originFetch(newRequest);
       const originResponseInfo = await generateResponseInfoByFetchResponse(
         response,
         requestId
@@ -101,9 +91,12 @@ export const createInterceptedFetch = (
         requestId
       );
     }
-    callback.responseReceived(responseInfo);
+    config.responseReceived(responseInfo);
     // one of response or networkModifyInfo must not be undefined
-    response = generateFetchResponseByModifyInfo(networkModifyInfo?.response, response)!;
+    response = generateFetchResponseByModifyInfo(
+      networkModifyInfo?.response,
+      response
+    )!;
 
     return response;
   }

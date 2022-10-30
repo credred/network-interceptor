@@ -22,13 +22,12 @@ const transformHeaders = (headers?: HeadersInit) => {
   return headerObj;
 };
 
-const transformRequestBody = (body?: BodyInit | null) => {
-  if (isNil(body)) {
+const transformRequestBody = (request: Request) => {
+  if (isNil(request.body)) {
     return undefined;
-  } else if (isString(body)) {
-    return body;
+  } else {
+    return request.clone().text();
   }
-  return BLOB_TEXT;
 };
 
 const transformResponseBody = (oldResponse: Response) => {
@@ -52,27 +51,17 @@ const transformResponseBody = (oldResponse: Response) => {
   };
 };
 
-export const generateRequestInfoByFetchOption = (
-  input: Request | string | URL,
-  init?: RequestInit
-): RequestInfo => {
-  let url: string | URL;
-  let option = init;
-  if (input instanceof Request) {
-    url = input.url;
-    option = input;
-  } else {
-    url = input;
-  }
-
+export const generateRequestInfoByFetchRequest = async (
+  request: Request
+): Promise<RequestInfo> => {
   return {
     id: uid(),
     type: "fetch",
     stage: "request",
-    method: option?.method?.toUpperCase() || "GET",
-    url: new URL(url, location.href).toString(),
-    requestHeaders: transformHeaders(option?.headers),
-    requestBody: transformRequestBody(option?.body),
+    method: request.method,
+    url: request.url,
+    requestHeaders: transformHeaders(request.headers),
+    requestBody: await transformRequestBody(request),
   };
 };
 

@@ -32,6 +32,14 @@ export type NetworkInfo = Omit<RequestInfo, 'stage'> & Partial<Omit<ResponseInfo
 
 export type StrongNetworkInfo = RequestInfo | ResponseInfo
 
-export type MatchRule = (requestInfo: RequestInfo) => Promise<NetworkRule | undefined>
-export type RequestWillBeSent = (requestInfo: RequestInfo) => void
-export type ResponseReceived = (responseInfo: ResponseInfo) => void
+export type MatchRule = (
+  requestInfo: RequestInfo
+) => Promise<NetworkRule | undefined>;
+export type RequestWillBeSent = (requestInfo: RequestInfo) => void;
+export type ResponseReceived = (responseInfo: ResponseInfo) => void;
+
+export interface interceptorConfig {
+  matchRule: MatchRule;
+  requestWillBeSent: RequestWillBeSent;
+  responseReceived: ResponseReceived;
+}
