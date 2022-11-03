@@ -39,7 +39,7 @@ export type MatchRule = (
 export type RequestWillBeSent = (requestInfo: RequestInfo) => void;
 export type ResponseReceived = (responseInfo: ResponseInfo) => void;
 
-export interface interceptorConfig {
+export interface InterceptorConfig {
   matchRule: MatchRule;
   requestWillBeSent: RequestWillBeSent;
   responseReceived: ResponseReceived;

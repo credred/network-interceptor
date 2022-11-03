@@ -50,7 +50,7 @@ const generateFetchResponseByModifyInfo = (
 
 export const createInterceptedFetch = (
   originFetch: typeof fetch,
-  config: interceptorConfig
+  config: InterceptorConfig
 ) => {
   async function interceptedFetch(
     input: Request | string | URL,
