@@ -85,12 +85,12 @@ const Headers: FC<NetWorkDetailProps> = (props) => {
         />
       </Collapse.Panel>
       {detail.requestHeaders && (
-        <Collapse.Panel header="Response Headers" key="2">
+        <Collapse.Panel header="Request Headers" key="2">
           <HeadersList items={objToLabelValue(detail.requestHeaders)} />
         </Collapse.Panel>
       )}
       {detail.responseHeaders && (
-        <Collapse.Panel header="Request Headers" key="3">
+        <Collapse.Panel header="Response Headers" key="3">
           <HeadersList items={objToLabelValue(detail.responseHeaders)} />
         </Collapse.Panel>
       )}
