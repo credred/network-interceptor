@@ -1,10 +1,9 @@
-import { isNil, isPlainObject, isString, upperFirst } from "lodash";
+import { isNil, isPlainObject } from "lodash";
 import uid from "tiny-uid";
 import { NetworkModifyInfo } from "../../../network-rule";
-import { BLOB_TEXT } from "../../constants";
 import { RequestInfo, ResponseInfo } from "../../types";
 
-const transformHeaders = (headers?: HeadersInit) => {
+const transformHeaders = (headers: HeadersInit) => {
   let headerObj: Record<string, string> | undefined;
   if (!headers) {
     headerObj = undefined;
@@ -94,59 +93,4 @@ export const generateResponseInfoByModifyInfo = (
     responseBodyParsable: true,
     responseHeaders: modifyInfo?.responseHeaders,
   };
-};
-
-const generateOriginProp = <
-  T extends string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  R extends Partial<Record<T, any>>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  O extends Partial<Record<T, any>>
->(
-  originObj: R,
-  obj: O,
-  propName: T
-): Record<T | `origin${Capitalize<T>}`, R[T]> | undefined => {
-  if (obj[propName]) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return {
-      [propName]: obj[propName],
-      [`origin${upperFirst(propName)}`]: originObj[propName],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any;
-  }
-};
-
-export const applyModifyInfoToRequestInfo = (
-  requestInfo: RequestInfo,
-  modifyInfo?: NetworkModifyInfo["request"],
-  ruleId?: string
-): RequestInfo => {
-  if (ruleId) {
-    requestInfo = { ...requestInfo, ruleId };
-  }
-  if (modifyInfo) {
-    return {
-      ...requestInfo,
-      ...generateOriginProp(requestInfo, modifyInfo, "requestHeaders"),
-      ...generateOriginProp(requestInfo, modifyInfo, "requestBody"),
-    };
-  }
-
-  return requestInfo;
-};
-
-export const applyModifyInfoToResponseInfo = (
-  responseInfo: ResponseInfo,
-  modifyInfo?: NetworkModifyInfo["response"]
-): ResponseInfo => {
-  if (modifyInfo) {
-    return {
-      ...responseInfo,
-      ...generateOriginProp(responseInfo, modifyInfo, "responseHeaders"),
-      ...generateOriginProp(responseInfo, modifyInfo, "responseBody"),
-    };
-  }
-
-  return responseInfo;
 };

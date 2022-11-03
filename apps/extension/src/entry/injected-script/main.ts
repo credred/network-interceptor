@@ -1,9 +1,14 @@
 import { onMessage, sendMessage, setNamespace } from "webext-bridge/window";
-import { createInterceptedFetch } from "common/api-interceptor";
+import {
+  createInterceptedFetch,
+  createInterceptedXhr,
+} from "common/api-interceptor";
 import { disableRule, setRules } from "common/network-rule";
+import { InterceptorConfig } from "common/api-interceptor/types";
 
 const oldFetch = fetch;
-const newFetch = createInterceptedFetch(oldFetch, {
+const oldXhr = XMLHttpRequest;
+const interceptorConfig: InterceptorConfig = {
   matchRule: (requestInfo) => {
     return sendMessage("matchRule", requestInfo, "background");
   },
@@ -13,9 +18,13 @@ const newFetch = createInterceptedFetch(oldFetch, {
   responseReceived: (responseInfo) => {
     void sendMessage("response", responseInfo, "devtools");
   },
-});
+};
+
+const newFetch = createInterceptedFetch(oldFetch, interceptorConfig);
+const newXhr = createInterceptedXhr(oldXhr, interceptorConfig);
 
 window.fetch = newFetch;
+window.XMLHttpRequest = newXhr;
 
 onMessage("rulesChange", (rules) => {
   setRules(Array.from(Object.values(rules.data)));

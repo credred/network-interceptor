@@ -7,3 +7,4 @@ export type {
 export { BLOB_TEXT } from "./constants";
 
 export { createInterceptedFetch } from "./core/fetch-interceptor";
+export { createInterceptedXhr } from "./core/xhr-interceptor";

@@ -2,10 +2,12 @@ import {
   NetworkModifyInfo,
   shouldContinueRequest,
 } from "../../../network-rule";
-import { interceptorConfig, ResponseInfo } from "../../types";
+import { InterceptorConfig, ResponseInfo } from "../../types";
 import {
   applyModifyInfoToRequestInfo,
   applyModifyInfoToResponseInfo,
+} from "../utils";
+import {
   generateRequestInfoByFetchRequest,
   generateResponseInfoByFetchResponse,
   generateResponseInfoByModifyInfo,
