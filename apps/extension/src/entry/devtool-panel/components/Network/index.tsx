@@ -111,7 +111,7 @@ const Network: FC = () => {
         onOpenRules={() => setRulesVisible(true)}
         disableRule={disableRule}
       />
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         <NetworkBrief
           data={data}
           currentNetworkDetail={currentNetworkDetail}

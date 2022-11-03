@@ -50,6 +50,7 @@ const NetworkBrief: FC<NetworkBriefProps> = (props) => {
       {!isEmpty(dataSource) ? (
         <Table<NetworkInfo>
           rowKey="id"
+          className="flex-1"
           dataSource={dataSource}
           onRow={(record) => {
             return {
