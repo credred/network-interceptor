@@ -1,6 +1,7 @@
-import { Table as AntTable, TableProps as AntdTableProps } from "antd";
 import { ForwardedRef, forwardRef } from "react";
+import { Table as AntTable, TableProps as AntdTableProps } from "antd";
 import classNames from "classnames";
+import { usePrefixCls } from "../_utils/usePrefixCls";
 import "./index.less";
 
 interface TableProps<RecordType> extends AntdTableProps<RecordType> {
@@ -11,13 +12,12 @@ interface TableProps<RecordType> extends AntdTableProps<RecordType> {
   fullHeight?: boolean;
 }
 
-const FULL_HEIGHT_CLASS_NAME = "ui-table-full-height";
-
 const InternalTable = <RecordType extends object = any>(
   props: TableProps<RecordType>,
   ref: ForwardedRef<HTMLDivElement>
 ) => {
   const { fullHeight, ...restProps } = props;
+  const { genCls } = usePrefixCls("table");
 
   return (
     <AntTable
@@ -25,7 +25,7 @@ const InternalTable = <RecordType extends object = any>(
       {...restProps}
       className={classNames(
         props.className,
-        fullHeight && FULL_HEIGHT_CLASS_NAME
+        fullHeight && genCls("wrapper-full-height")
       )}
     />
   );

@@ -1,7 +1,8 @@
-@ant-prefix: ant;
+@import (reference) "../../themes/index.less";
 @table-prefix-cls: ~"@{ant-prefix}-table";
+@spin-prefix-cls: ~"@{ant-prefix}-spin";
 
-.ui-table-full-height {
+.@{table-prefix-cls}-wrapper-full-height {
   .@{table-prefix-cls} {
     height: 100%;
 
@@ -20,7 +21,7 @@
     height: 100%;
   }
 
-  .@{ant-prefix}-spin {
+  .@{spin-prefix-cls} {
     &-nested-loading,
     &-container {
       height: 100%;

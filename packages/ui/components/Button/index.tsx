@@ -1,5 +1,4 @@
 import { Button as AntdButton, ButtonProps } from "antd";
-import classNames from "classnames";
 import { forwardRef, Ref } from "react";
 import "./index.less";
 
@@ -15,13 +14,7 @@ const internalButton = (
   props: ButtonProps,
   ref: Ref<HTMLElement> | undefined
 ) => {
-  return (
-    <AntdButton
-      ref={ref}
-      {...props}
-      className={classNames(props.className, "ui-button")}
-    />
-  );
+  return <AntdButton ref={ref} {...props} />;
 };
 
 const Button = forwardRef(internalButton) as CompoundedComponent;

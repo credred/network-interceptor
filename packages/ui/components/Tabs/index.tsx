@@ -1,5 +1,6 @@
 import { Tabs as AntTabs, TabsProps as AntTabsProps } from "antd";
 import classNames from "classnames";
+import { usePrefixCls } from "../_utils/usePrefixCls";
 import "./index.less";
 
 interface TabsProps extends AntTabsProps {
@@ -10,17 +11,16 @@ interface TabsProps extends AntTabsProps {
   fullHeight?: boolean;
 }
 
-const FULL_HEIGHT_CLASS_NAME = "ui-tabs-full-height";
-
 const Tabs = (props: TabsProps) => {
   const { fullHeight, ...restProps } = props;
+  const { genCls } = usePrefixCls("tabs");
 
   return (
     <AntTabs
       {...restProps}
       className={classNames(
         props.className,
-        fullHeight && FULL_HEIGHT_CLASS_NAME
+        fullHeight && genCls("full-height")
       )}
     />
   );
