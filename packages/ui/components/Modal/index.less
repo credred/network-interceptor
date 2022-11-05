@@ -1,0 +1,23 @@
+@import (reference) "../../themes/index.less";
+
+@dialog-prefix-cls: ~"@{ant-prefix}-modal";
+
+.@{dialog-prefix-cls}-full-screen {
+  top: 0;
+  max-width: 100%;
+  padding: 0;
+  height: 100%;
+
+  .@{dialog-prefix-cls}-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .@{dialog-prefix-cls}-body {
+    min-height: 0;
+    flex: 1;
+    overflow: auto;
+    padding: 0;
+  }
+}
