@@ -123,7 +123,7 @@ const Network: FC = () => {
       <Modal
         title="Rules"
         open={rulesVisible}
-        footer={null}
+        fullScreen
         onCancel={() => setRulesVisible(false)}
       >
         <NetworkRules />
