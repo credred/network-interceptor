@@ -14,7 +14,7 @@ export interface NetworkAdvanceMatchRule {
 export interface NetworkBaseMatchRule {
   method: string;
   protocol?: "http" | "https";
-  host?: string;
+  origin?: string;
   path: string;
 }
 

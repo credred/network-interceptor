@@ -19,7 +19,7 @@ export const setRules = (newRules: NetworkRule[]) => {
 export const match = (request: NetworkInfo, rule: NetworkRule): boolean => {
   const requestUrl = new URL(request.url);
   const {
-    baseMatchRule: { path, method, protocol, host },
+    baseMatchRule: { path, method, protocol, origin },
   } = rule;
   const matchUrl = pathMath(path, { decode: decodeURIComponent });
   const matchUrlResult = matchUrl(requestUrl.pathname);
@@ -28,7 +28,7 @@ export const match = (request: NetworkInfo, rule: NetworkRule): boolean => {
     !!matchUrlResult &&
     request.method === method &&
     (!protocol || requestUrl.protocol === protocol) &&
-    (!host || requestUrl.hostname === host)
+    (!origin || requestUrl.origin === origin)
   );
 };
 
