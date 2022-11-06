@@ -1,16 +1,52 @@
+import { memo, useEffect, useMemo, useState } from "react";
 import { useMount } from "ahooks";
 import { NetworkRule } from "common/network-rule";
-import { FC, memo, useEffect, useState } from "react";
-import { Editor, List } from "ui";
-import { rules$ } from "../../../../lib/storage";
+import {
+  METHOD_OPTIONS,
+  STATUS_CODE_OPTIONS,
+} from "common/constants/options.constant";
+import lang from "common/lang";
+import { Button, Checkbox, Editor, Input, List, Select, Tabs } from "ui";
+import { deleteRule, rules$, saveRule } from "../../../../lib/storage";
+import { useForm, Controller } from "react-hook-form";
+import { DeleteFilled } from "@ant-design/icons";
 
-const NetworkRules: FC = () => {
-  const [rules, setRules] = useState<NetworkRule[]>([]);
+interface LinkRule {
+  value: NetworkRule;
+  pre?: LinkRule;
+  next?: LinkRule;
+}
+
+const generateLinkRules = (
+  rules: Record<string, NetworkRule>
+): Record<string, LinkRule> => {
+  const linkRule: Record<string, LinkRule> = {};
+  let preLinkRule: LinkRule | undefined = undefined;
+  for (const ruleId in rules) {
+    const currentRule = rules[ruleId];
+    let currentLinkRule: LinkRule;
+    currentLinkRule = linkRule[ruleId] = {
+      value: currentRule,
+      pre: preLinkRule,
+    };
+    if (preLinkRule) {
+      preLinkRule.next = currentLinkRule;
+    }
+    preLinkRule = currentLinkRule;
+  }
+
+  return linkRule;
+};
+
+const NetworkRules: React.FC = () => {
+  const [rules, setRules] = useState<Record<string, NetworkRule>>({});
+  const ruleList = useMemo(() => [...Object.values(rules)], [rules]);
+  const linkRules = useMemo(() => generateLinkRules(rules), [rules]);
   const [activeRule, setActiveRule] = useState<NetworkRule>();
 
   useMount(() => {
     rules$.subscribe((rules) => {
-      setRules([...Object.values(rules)]);
+      setRules(rules);
     });
   });
 
@@ -20,31 +56,150 @@ const NetworkRules: FC = () => {
     }
   }, [rules]);
 
+  const { control, reset, watch } = useForm<NetworkRule>();
+
+  useEffect(() => {
+    const subscription = watch((value, { type }) => {
+      if (type !== "change") return;
+      saveRule(value as NetworkRule);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  const handleRemoveRule = () => {
+    if (activeRule) {
+      deleteRule(activeRule.id);
+      const linkRule = linkRules[activeRule.id];
+      setActiveRule(linkRule.next?.value || linkRule.pre?.value);
+    }
+  };
+
+  useEffect(() => {
+    reset(activeRule);
+  }, [activeRule]);
+
   return (
     <div className="flex h-full">
-      <List
-        rowKey="id"
-        className="w-[260px]"
-        selectable
-        activeKey={activeRule?.id}
-        dataSource={rules}
-        onChange={(_, rule) => {
-          setActiveRule(rule);
-        }}
-        renderItem={(item) => (
-          <List.Item key={item.id}>
-            <div className="truncate">{item.baseMatchRule.path}</div>
-            <div>{item.baseMatchRule.method}</div>
-          </List.Item>
-        )}
-      ></List>
-      <div className="flex-1 min-w-0">
-        <Editor
-          value={activeRule?.modifyInfo.response?.responseBody}
-          theme="vs-dark"
-          language="json"
-        ></Editor>
-      </div>
+      <section>
+        <div>
+          <Button type="link" title="delete rule" onClick={handleRemoveRule}>
+            <DeleteFilled />
+          </Button>
+        </div>
+        <List
+          rowKey="id"
+          className="w-[260px]"
+          selectable
+          activeKey={activeRule?.id}
+          dataSource={ruleList}
+          onChange={(_, rule) => {
+            setActiveRule(rule);
+          }}
+          renderItem={(item) => (
+            <List.Item key={item.id}>
+              <div className="truncate">{item.baseMatchRule.path}</div>
+              <div>{item.baseMatchRule.method}</div>
+            </List.Item>
+          )}
+        ></List>
+      </section>
+      <section className="flex-1 min-w-0 px-1 pt-1">
+        <div className="flex gap-2 flex-col h-full">
+          <div className="flex gap-2">
+            <Controller
+              control={control}
+              name="baseMatchRule.method"
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  className="w-[100px]"
+                  options={METHOD_OPTIONS}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="baseMatchRule.path"
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  className="flex-1"
+                  placeholder={lang.rule.pathPlaceHolder}
+                />
+              )}
+            />
+          </div>
+
+          <Controller
+            control={control}
+            name="modifyInfo.continueRequest"
+            render={({ field }) => (
+              <Checkbox className="self-start" {...field}>
+                Continue Request
+              </Checkbox>
+            )}
+          />
+          <Tabs
+            items={[
+              {
+                label: "Response",
+                key: "response",
+                children: (
+                  <div className="flex flex-col gap-2 h-full">
+                    <Controller
+                      control={control}
+                      name="modifyInfo.response.status"
+                      render={({ field }) => (
+                        <Select {...field} className="w-[250px]" showSearch>
+                          {STATUS_CODE_OPTIONS.map((group) => (
+                            <Select.OptGroup
+                              key={group.label}
+                              label={group.label}
+                            >
+                              {group.children.map((item) => (
+                                <Select.Option
+                                  key={group.label + item.value}
+                                  value={item.value}
+                                >
+                                  {item.label}
+                                </Select.Option>
+                              ))}
+                            </Select.OptGroup>
+                          ))}
+                        </Select>
+                      )}
+                    />
+                    <Controller
+                      control={control}
+                      name="modifyInfo.response.responseBody"
+                      render={({ field: { ref, ...field } }) => (
+                        <Editor
+                          {...field}
+                          className="flex-1"
+                          theme="vs-dark"
+                          language="json"
+                        ></Editor>
+                      )}
+                    />
+                  </div>
+                ),
+              },
+              {
+                label: "Response Headers",
+                key: "response headers",
+              },
+              {
+                label: "Request",
+                key: "request",
+              },
+              {
+                label: "Request Headers",
+                key: "request headers",
+              },
+            ]}
+          ></Tabs>
+        </div>
+      </section>
     </div>
   );
 };

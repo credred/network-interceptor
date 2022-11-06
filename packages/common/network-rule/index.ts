@@ -1,6 +1,7 @@
 import { match as pathMath } from "path-to-regexp";
 import uid from "tiny-uid";
 import { NetworkInfo } from "../api-interceptor";
+import { RULE_All_METHOD } from "../constants/options.constant";
 import { NetworkModifyInfo, NetworkRule } from "./types";
 
 export * from "./types";
@@ -26,7 +27,7 @@ export const match = (request: NetworkInfo, rule: NetworkRule): boolean => {
 
   return (
     !!matchUrlResult &&
-    request.method === method &&
+    (request.method === method || request.method === RULE_All_METHOD) &&
     (!protocol || requestUrl.protocol === protocol) &&
     (!origin || requestUrl.origin === origin)
   );
