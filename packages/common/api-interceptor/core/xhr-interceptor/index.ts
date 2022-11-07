@@ -261,7 +261,7 @@ export const createInterceptedXhr = (
     }
     #generateResponseInfoByXhr(): ResponseInfo {
       return {
-        id: this.#requestInfo!.id,
+        ...this.#requestInfo!,
         stage: "response",
         status: this.status,
         statusText: this.statusText,

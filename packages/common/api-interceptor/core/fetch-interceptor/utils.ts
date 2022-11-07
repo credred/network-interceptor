@@ -66,11 +66,11 @@ export const generateRequestInfoByFetchRequest = async (
 
 export const generateResponseInfoByFetchResponse = async (
   response: Response,
-  id: string
+  requestInfo: RequestInfo
 ): Promise<ResponseInfo> => {
   const { data, parsable } = transformResponseBody(response);
   return {
-    id,
+    ...requestInfo,
     stage: "response",
     status: response.status,
     statusText: response.statusText,
@@ -82,10 +82,10 @@ export const generateResponseInfoByFetchResponse = async (
 
 export const generateResponseInfoByModifyInfo = (
   modifyInfo: NetworkModifyInfo["response"],
-  id: string
+  requestInfo: RequestInfo
 ): ResponseInfo => {
   return {
-    id,
+    ...requestInfo,
     stage: "response",
     status: modifyInfo?.status || 200,
     statusText: modifyInfo?.statusText || "OK",

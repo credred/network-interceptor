@@ -19,6 +19,13 @@ const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
 
   useEffect(() => {
     onMessage("request", ({ data: requestData }) => {
+      if (data[requestData.id]) {
+        debug(
+          "the response has been received, but now received request",
+          requestData
+        );
+        return;
+      }
       setData((data) => ({ ...data, [requestData.id]: requestData }));
     });
   }, []);
@@ -26,6 +33,12 @@ const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
   useEffect(() => {
     onMessage("response", ({ data: responseData }) => {
       setData((data) => {
+        if (!data[responseData.id]) {
+          debug(
+            "received the response before receiving the request",
+            responseData
+          );
+        }
         const networkInfo = { ...data[responseData.id], ...responseData };
         memoizedOnReceive(networkInfo);
         return {
@@ -81,7 +94,7 @@ const Network: FC = () => {
   const ruleDisabled = useRef(false);
 
   const [data, setData] = useData((networkInfo) => {
-    if (enableRecord && !networkInfo.ruleId) {
+    if (enableRecord && !networkInfo.ruleId && networkInfo.responseBody) {
       const rule = initRuleByNetworkInfo(networkInfo);
       void saveRule(rule);
     }

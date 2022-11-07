@@ -59,7 +59,6 @@ export const createInterceptedFetch = (
     const request = new Request(input, init);
 
     const originRequestInfo = await generateRequestInfoByFetchRequest(request);
-    const requestId = originRequestInfo.id;
     const rule = await config.matchRule(originRequestInfo);
     const networkModifyInfo = rule?.modifyInfo;
     const requestInfo = applyModifyInfoToRequestInfo(
@@ -80,7 +79,7 @@ export const createInterceptedFetch = (
       response = await originFetch(newRequest);
       const originResponseInfo = await generateResponseInfoByFetchResponse(
         response,
-        requestId
+        requestInfo
       );
       responseInfo = applyModifyInfoToResponseInfo(
         originResponseInfo,
@@ -90,7 +89,7 @@ export const createInterceptedFetch = (
       // networkModifyInfo must not be undefined
       responseInfo = generateResponseInfoByModifyInfo(
         networkModifyInfo!.response,
-        requestId
+        requestInfo
       );
     }
     config.responseReceived(responseInfo);

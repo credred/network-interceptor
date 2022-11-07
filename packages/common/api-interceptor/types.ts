@@ -14,7 +14,7 @@ export interface RequestInfo {
   originRequestBody?: string;
 }
 
-export interface ResponseInfo {
+export interface ResponseInfo extends Omit<RequestInfo, "stage"> {
   id: string;
   stage: "response";
   status: number;
