@@ -14,7 +14,9 @@ const InternalCheckbox: React.ForwardRefRenderFunction<
 > = (props, ref) => {
   const { value, ...restProps } = props;
 
-  return <AntCheckbox ref={ref} {...restProps} checked={value} />;
+  const checkedProps = "value" in props ? { checked: value } : {};
+
+  return <AntCheckbox ref={ref} {...restProps} {...checkedProps} />;
 };
 
 interface CompoundedComponent
