@@ -185,6 +185,22 @@ export const createInterceptedXhr = (
       }
     }
 
+    #verifyResponseText() {
+      if (!["", "text"].includes(this.originXhr.responseType)) {
+        throw new DOMException(
+          `Uncaught DOMException: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was '${this.originXhr.responseType}').`
+        );
+      }
+    }
+
+    #verifyResponseXML() {
+      if (!["", "document"].includes(this.originXhr.responseType)) {
+        throw new DOMException(
+          `Uncaught DOMException: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was '${this.originXhr.responseType}').`
+        );
+      }
+    }
+
     #convertRequestBody(
       body?: Document | XMLHttpRequestBodyInit | null | undefined
     ) {
@@ -199,7 +215,7 @@ export const createInterceptedXhr = (
     }
 
     #convertResponseBody(responseBody?: string) {
-      if (this.responseType === "" || this.responseText === "text") {
+      if (this.responseType === "" || this.responseType === "text") {
         return responseBody;
       } else if (this.responseType === "json") {
         try {
@@ -254,7 +270,21 @@ export const createInterceptedXhr = (
         this.#convertResponseBody(modifyInfo?.responseBody) ||
         xhr?.response ||
         "";
-      this.#responseText = modifyInfo?.responseBody || xhr?.responseText || "";
+      if (modifyInfo?.responseBody) {
+        this.#response = this.#parseResponseBodyByResponseType(
+          modifyInfo?.responseBody
+        );
+      } else {
+        this.#response = xhr?.response || "";
+      }
+      // read xhr.responseText if originChr.responseType is valid value
+      this.#responseText =
+        modifyInfo?.responseBody ||
+        (["", "text"].includes(this.originXhr.responseType) &&
+          xhr?.responseText) ||
+        "";
+      // TODO: XML support (overrideMimeType responseType==='document')
+      this.#responseXML = xhr?.responseXML || null;
       this.#status = modifyInfo?.status || xhr?.status || 200;
       this.#statusText = modifyInfo?.statusText || xhr?.statusText || "";
       this.#responseHeaders =
@@ -268,9 +298,18 @@ export const createInterceptedXhr = (
         status: this.status,
         statusText: this.statusText,
         responseHeaders: this.#responseHeaders,
-        responseBody: this.responseText,
+        responseBody: this.response,
         responseBodyParsable: true,
       };
+    }
+    #parseResponseBodyByResponseType(responseBody: string) {
+      if (this.originXhr.responseType === "json") {
+        try {
+          return JSON.parse(responseBody);
+        } catch {
+          // do nothing
+        }
+      }
     }
     //#endregion
 
@@ -322,11 +361,13 @@ export const createInterceptedXhr = (
 
     #responseText = "";
     get responseText() {
+      this.#verifyResponseText();
       return this.#responseText;
     }
 
-    #responseXML = null;
+    #responseXML: Document | null = null;
     get responseXML() {
+      this.#verifyResponseXML();
       return this.#responseXML;
     }
 
