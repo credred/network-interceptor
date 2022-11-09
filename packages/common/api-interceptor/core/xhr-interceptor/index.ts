@@ -154,7 +154,9 @@ export const createInterceptedXhr = (
         config.requestWillBeSent(this.#requestInfo);
 
         if (shouldContinueRequest(this.#networkModifyInfo)) {
-          this.#realSend();
+          // convertRequestBody function will break body of type blob.
+          // so we use origin body directly if requestBody dost not exist
+          this.#realSend(this.#networkModifyInfo?.request?.requestBody || body);
         } else {
           await postTask();
           this.#responseURL = this.#requestInfo.url;
@@ -238,12 +240,12 @@ export const createInterceptedXhr = (
       this.#statusText = "";
       this.#responseHeaders = undefined;
     }
-    #realSend() {
+    #realSend(body: Document | XMLHttpRequestBodyInit | null | undefined) {
       if (!this.#requestInfo) return;
       forEach(this.#requestInfo.requestHeaders, (value, key) => {
         this.originXhr.setRequestHeader(key, value);
       });
-      this.originXhr.send(this.#requestInfo.requestBody);
+      this.originXhr.send(body);
     }
     #changeXhrResponseByModifyInfo(xhr?: XMLHttpRequest) {
       const modifyInfo = this.#networkModifyInfo?.response;
