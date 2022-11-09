@@ -22,6 +22,7 @@ const column: TableColumnsType<NetworkInfo> = [
     title: "Url",
     dataIndex: "url",
     key: "url",
+    ellipsis: true,
   },
   {
     title: "Method",
@@ -33,11 +34,13 @@ const column: TableColumnsType<NetworkInfo> = [
     title: "Status",
     dataIndex: "status",
     key: "Status",
+    width: 80,
   },
   {
     title: "Type",
     dataIndex: "type",
     key: "Type",
+    width: 80,
   },
 ];
 
@@ -63,7 +66,7 @@ const NetworkBrief: FC<NetworkBriefProps> = (props) => {
               },
             };
           }}
-          scroll={{ y: "100%", x: "auto" }}
+          scroll={{ y: "100%", x: "100%" }}
           bordered
           size="small"
           pagination={false}
