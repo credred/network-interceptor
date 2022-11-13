@@ -265,15 +265,8 @@ export const createInterceptedXhr = (
     }
     #changeXhrResponseByModifyInfo(xhr?: XMLHttpRequest) {
       const modifyInfo = this.#networkModifyInfo?.response;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      this.#response =
-        this.#convertResponseBody(modifyInfo?.responseBody) ||
-        xhr?.response ||
-        "";
       if (modifyInfo?.responseBody) {
-        this.#response = this.#parseResponseBodyByResponseType(
-          modifyInfo?.responseBody
-        );
+        this.#response = this.#convertResponseBody(modifyInfo?.responseBody);
       } else {
         this.#response = xhr?.response || "";
       }
@@ -298,18 +291,9 @@ export const createInterceptedXhr = (
         status: this.status,
         statusText: this.statusText,
         responseHeaders: this.#responseHeaders,
-        responseBody: this.response,
+        responseBody: toString(this.response),
         responseBodyParsable: true,
       };
-    }
-    #parseResponseBodyByResponseType(responseBody: string) {
-      if (this.originXhr.responseType === "json") {
-        try {
-          return JSON.parse(responseBody);
-        } catch {
-          // do nothing
-        }
-      }
     }
     //#endregion
 
@@ -354,8 +338,8 @@ export const createInterceptedXhr = (
       return this.#readyState;
     }
 
-    #response = "";
-    get response(): any {
+    #response: unknown = "";
+    get response(): unknown {
       return this.#response;
     }
 
