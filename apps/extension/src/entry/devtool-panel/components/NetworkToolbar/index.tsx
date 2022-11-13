@@ -4,8 +4,8 @@ import {
   StopOutlined,
   UnorderedListOutlined,
 } from "@ant-design/icons";
-import { clearRules } from "../../../../lib/storage/index";
 import { FC } from "react";
+import { request } from "../utils/request";
 
 interface NetworkToolbarProps {
   clear: () => void;
@@ -18,7 +18,7 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
   const actions = {
     clear: () => props.clear(),
     onOpenRules: () => props.onOpenRules(),
-    clearRules: () => void clearRules(),
+    clearRules: () => void request.clearRules(),
     toggleRecord: (enabled: boolean) => props.toggleRecord(enabled),
     disableRule: (disabled: boolean) => props.disableRule(disabled),
   };

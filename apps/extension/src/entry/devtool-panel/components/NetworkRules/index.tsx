@@ -1,5 +1,4 @@
 import { memo, useEffect, useMemo, useState } from "react";
-import { useMount } from "ahooks";
 import { NetworkRule } from "common/network-rule";
 import {
   METHOD_OPTIONS,
@@ -7,9 +6,9 @@ import {
 } from "common/constants/options.constant";
 import lang from "common/lang";
 import { Button, Checkbox, Editor, Input, List, Select, Tabs } from "ui";
-import { deleteRule, rules$, saveRule } from "../../../../lib/storage";
 import { useForm, Controller } from "react-hook-form";
 import { DeleteFilled } from "@ant-design/icons";
+import { request } from "../utils/request";
 
 interface LinkRule {
   value: NetworkRule;
@@ -17,18 +16,15 @@ interface LinkRule {
   next?: LinkRule;
 }
 
-const generateLinkRules = (
-  rules: Record<string, NetworkRule>
-): Record<string, LinkRule> => {
+const generateLinkRules = (rules: NetworkRule[]): Record<string, LinkRule> => {
   const linkRule: Record<string, LinkRule> = {};
   let preLinkRule: LinkRule | undefined = undefined;
-  for (const ruleId in rules) {
-    const currentRule = rules[ruleId];
-    let currentLinkRule: LinkRule;
-    currentLinkRule = linkRule[ruleId] = {
+  for (const currentRule of rules) {
+    const ruleId = currentRule.id;
+    const currentLinkRule: LinkRule = (linkRule[ruleId] = {
       value: currentRule,
       pre: preLinkRule,
-    };
+    });
     if (preLinkRule) {
       preLinkRule.next = currentLinkRule;
     }
@@ -39,15 +35,16 @@ const generateLinkRules = (
 };
 
 const NetworkRules: React.FC = () => {
-  const [rules, setRules] = useState<Record<string, NetworkRule>>({});
-  const ruleList = useMemo(() => [...Object.values(rules)], [rules]);
+  const [rules, setRules] = useState<NetworkRule[]>([]);
   const linkRules = useMemo(() => generateLinkRules(rules), [rules]);
   const [activeRule, setActiveRule] = useState<NetworkRule>();
 
-  useMount(() => {
-    rules$.subscribe((rules) => {
+  useEffect(() => {
+    const subscription = request.rules$.subscribe((rules) => {
       setRules(rules);
     });
+
+    return () => subscription.unsubscribe();
   });
 
   useEffect(() => {
@@ -61,14 +58,14 @@ const NetworkRules: React.FC = () => {
   useEffect(() => {
     const subscription = watch((value, { type }) => {
       if (type !== "change") return;
-      saveRule(value as NetworkRule);
+      void request.updateRule(value as NetworkRule);
     });
     return () => subscription.unsubscribe();
   }, [watch]);
 
   const handleRemoveRule = () => {
     if (activeRule) {
-      deleteRule(activeRule.id);
+      void request.deleteRule(activeRule.id);
       const linkRule = linkRules[activeRule.id];
       setActiveRule(linkRule.next?.value || linkRule.pre?.value);
     }
@@ -91,7 +88,7 @@ const NetworkRules: React.FC = () => {
           className="w-[260px]"
           selectable
           activeKey={activeRule?.id}
-          dataSource={ruleList}
+          dataSource={rules}
           onChange={(_, rule) => {
             setActiveRule(rule);
           }}

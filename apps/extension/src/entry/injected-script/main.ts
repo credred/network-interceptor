@@ -3,7 +3,7 @@ import {
   createInterceptedFetch,
   createInterceptedXhr,
 } from "common/api-interceptor";
-import { disableRule, setRules } from "common/network-rule";
+import { disableRule } from "common/network-rule";
 import { InterceptorConfig } from "common/api-interceptor/types";
 
 const oldFetch = fetch;
@@ -25,10 +25,6 @@ const newXhr = createInterceptedXhr(oldXhr, interceptorConfig);
 
 window.fetch = newFetch;
 window.XMLHttpRequest = newXhr;
-
-onMessage("rulesChange", (rules) => {
-  setRules(Array.from(Object.values(rules.data)));
-});
 
 // webext-bridge cannot call sendMessage immediately on load.
 // so we should use setTimeout to wrap the sendMessage code

@@ -1,12 +1,12 @@
-import "webext-bridge/background";
-
+import { onMessage, onOpenStreamChannel } from "webext-bridge/background";
 import { matchRule, setRules } from "common/network-rule";
-import { rules$ } from "../../lib/storage";
-import { onMessage } from "webext-bridge/background";
+import { rules$, createStorageServer } from "../../lib/storage/server";
 
 rules$.subscribe((rules) => {
-  setRules(Array.from(Object.values(rules)));
+  setRules(rules);
 });
+
+createStorageServer(onMessage, onOpenStreamChannel);
 
 onMessage("matchRule", (msg) => {
   return matchRule(msg.data);

@@ -53,7 +53,6 @@ export const initRuleByNetworkInfo = (
   const requestUrl = new URL(networkInfo.url);
   return {
     ...partialRule,
-    version: 1,
     id: partialRule?.id ?? uid(),
     baseMatchRule: partialRule?.baseMatchRule ?? {
       method: networkInfo.method,

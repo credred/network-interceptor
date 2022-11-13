@@ -3,14 +3,13 @@ import { onMessage, sendMessage } from "webext-bridge/devtools";
 import NetworkBrief from "../NetworkBrief";
 import NetWorkDetail from "../NetworkDetail";
 import { NetworkInfo } from "common/api-interceptor/types";
-import { rules$, saveRule } from "../../../../lib/storage";
-import { mapValues } from "lodash";
-import { initRuleByNetworkInfo, matchRule } from "common/network-rule";
+import { initRuleByNetworkInfo } from "common/network-rule";
 import debugFn from "debug";
 import NetworkToolbar from "../NetworkToolbar";
 import { Modal } from "ui";
 import NetworkRules from "../NetworkRules";
 import { useMemoizedFn, useMount } from "ahooks";
+import { request } from "../utils/request";
 const debug = debugFn("Network-Manager");
 
 const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
@@ -49,24 +48,24 @@ const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
     });
   }, []);
 
-  useEffect(() => {
-    const subscription = rules$.subscribe(() => {
-      debug("apply ruleId to oldData when rules change");
-      setData((data) =>
-        mapValues(data, (networkInfo) => {
-          if (networkInfo.ruleId) {
-            return networkInfo;
-          }
-          const rule = matchRule(networkInfo);
-          if (rule) {
-            return { ...networkInfo, ruleId: rule.id };
-          }
-          return networkInfo;
-        })
-      );
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  // useEffect(() => {
+  //   const subscription = rules$.subscribe(() => {
+  //     debug("apply ruleId to oldData when rules change");
+  //     setData((data) =>
+  //       mapValues(data, (networkInfo) => {
+  //         if (networkInfo.ruleId) {
+  //           return networkInfo;
+  //         }
+  //         const rule = matchRule(networkInfo);
+  //         if (rule) {
+  //           return { ...networkInfo, ruleId: rule.id };
+  //         }
+  //         return networkInfo;
+  //       })
+  //     );
+  //   });
+  //   return () => subscription.unsubscribe();
+  // }, []);
 
   return [data, setData] as const;
 };
@@ -96,7 +95,7 @@ const Network: FC = () => {
   const [data, setData] = useData((networkInfo) => {
     if (enableRecord && !networkInfo.ruleId && networkInfo.responseBody) {
       const rule = initRuleByNetworkInfo(networkInfo);
-      void saveRule(rule);
+      void request.updateRule(rule);
     }
   });
   const [currentNetworkDetail, setCurrentNetworkDetail] =

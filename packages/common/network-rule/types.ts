@@ -34,7 +34,6 @@ export interface NetworkModifyInfo {
 }
 
 export interface NetworkRule {
-  version: 1;
   id: string;
   /**
    * @default false

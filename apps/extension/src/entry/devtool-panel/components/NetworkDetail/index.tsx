@@ -2,10 +2,10 @@ import { FC, useEffect, useState } from "react";
 import { Collapse, Tabs, Editor } from "ui";
 import { NetworkInfo } from "common/api-interceptor";
 import "./index.less";
-import { getRuleById, saveRule } from "../../../../lib/storage";
 import { initRuleByNetworkInfo, NetworkRule } from "common/network-rule";
 import { usePrevious, useMemoizedFn } from "ahooks";
 import debugFn from "debug";
+import { request } from "../utils/request";
 const debug = debugFn("NetworkDetail");
 debugFn.enable("*");
 
@@ -114,7 +114,7 @@ const useRule = (networkInfo?: NetworkInfo) => {
         // generate new rule
         let partialRule: Partial<NetworkRule> = {};
         if (networkInfo.ruleId) {
-          partialRule = await getRuleById(networkInfo.ruleId);
+          partialRule = (await request.getRule(networkInfo.ruleId)) || {};
         }
         const rule = initRuleByNetworkInfo(networkInfo, partialRule);
         debug("init rule", rule);
@@ -133,7 +133,7 @@ const useRule = (networkInfo?: NetworkInfo) => {
 const useRuleForUpdate = (rule?: NetworkRule) => {
   const updateResponseBody = useMemoizedFn((body: string | undefined) => {
     if (!rule) return;
-    void saveRule({
+    void request.updateRule({
       ...rule,
       modifyInfo: {
         ...rule.modifyInfo,
