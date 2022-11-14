@@ -5,7 +5,11 @@ import {
   shouldContinueRequest,
 } from "../../../network-rule";
 import { InterceptorConfig, RequestInfo, ResponseInfo } from "../../types";
-import { applyModifyInfoToRequestInfo, postTask } from "../utils";
+import {
+  applyModifyInfoToRequestInfo,
+  generateErrorResponseInfo,
+  postTask,
+} from "../utils";
 
 type fn = () => void;
 
@@ -54,7 +58,7 @@ const implementXhrNativeEvent = (XhrLike: typeof XMLHttpRequest) => {
         const func = this[`on${event.type}`];
         if (event.type in nativeEventObj && typeof func === "function") {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-          func?.();
+          func?.(event);
         }
         return result;
       },
@@ -80,7 +84,14 @@ export const createInterceptedXhr = (
     constructor() {
       super();
       this.originXhr.onabort = (event) => this.dispatchEvent(cloneEvent(event));
-      this.originXhr.onerror = (event) => this.dispatchEvent(cloneEvent(event));
+      this.originXhr.onerror = (event) => {
+        if (this.#status !== 0) {
+          // the response status has been modified as successful
+          this.dispatchEvent(new ProgressEvent("load"));
+        } else {
+          this.dispatchEvent(cloneEvent(event));
+        }
+      };
       this.originXhr.onload = (event) => this.dispatchEvent(cloneEvent(event));
       this.originXhr.onloadend = (event) =>
         this.dispatchEvent(cloneEvent(event));
@@ -88,9 +99,25 @@ export const createInterceptedXhr = (
         this.dispatchEvent(cloneEvent(event));
       this.originXhr.onreadystatechange = () => {
         if (this.originXhr.readyState === 4) {
-          this.#changeXhrResponseByModifyInfo(this.originXhr);
-          const responseInfo = this.#generateResponseInfoByXhr();
-          config.responseReceived(responseInfo);
+          // we use readystatechange event instead of onload event and onerror event, because the former is triggered first
+          if (this.originXhr.status === 0) {
+            // xhr failed to request
+            if (this.#networkModifyInfo?.response) {
+              // if modifyInfo.response exist using it as response
+              this.#changeXhrResponseByModifyInfo();
+              const responseInfo = this.#generateResponseInfoByXhr();
+              config.responseReceived(responseInfo);
+            } else {
+              const responseInfo = generateErrorResponseInfo(
+                this.#requestInfo!
+              );
+              config.responseReceived(responseInfo);
+            }
+          } else {
+            this.#changeXhrResponseByModifyInfo(this.originXhr);
+            const responseInfo = this.#generateResponseInfoByXhr();
+            config.responseReceived(responseInfo);
+          }
         }
         this.#readyState = this.originXhr.readyState;
       };

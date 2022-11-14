@@ -57,6 +57,19 @@ export const applyModifyInfoToResponseInfo = (
   return responseInfo;
 };
 
+export const generateErrorResponseInfo = (
+  requestInfo: RequestInfo
+): ResponseInfo => {
+  return {
+    ...requestInfo,
+    stage: "response",
+    status: 0,
+    statusText: "(failed)",
+    responseBody: "",
+    responseBodyParsable: true,
+  };
+};
+
 export const postTask = (): Promise<void> => {
   return new Promise((resolve) => {
     const channel = new MessageChannel();

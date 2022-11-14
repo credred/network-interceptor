@@ -6,6 +6,7 @@ import { InterceptorConfig, ResponseInfo } from "../../types";
 import {
   applyModifyInfoToRequestInfo,
   applyModifyInfoToResponseInfo,
+  generateErrorResponseInfo,
 } from "../utils";
 import {
   generateRequestInfoByFetchRequest,
@@ -76,15 +77,28 @@ export const createInterceptedFetch = (
         request
       );
 
-      response = await originFetch(newRequest);
-      const originResponseInfo = await generateResponseInfoByFetchResponse(
-        response,
-        requestInfo
-      );
-      responseInfo = applyModifyInfoToResponseInfo(
-        originResponseInfo,
-        networkModifyInfo?.response
-      );
+      try {
+        response = await originFetch(newRequest);
+        const originResponseInfo = await generateResponseInfoByFetchResponse(
+          response,
+          requestInfo
+        );
+        responseInfo = applyModifyInfoToResponseInfo(
+          originResponseInfo,
+          networkModifyInfo?.response
+        );
+      } catch (e) {
+        if (networkModifyInfo?.response) {
+          // make the response successful
+          responseInfo = generateResponseInfoByModifyInfo(
+            networkModifyInfo.response,
+            requestInfo
+          );
+        } else {
+          config.responseReceived(generateErrorResponseInfo(requestInfo));
+          throw e;
+        }
+      }
     } else {
       // networkModifyInfo must not be undefined
       responseInfo = generateResponseInfoByModifyInfo(
