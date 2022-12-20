@@ -1,10 +1,11 @@
 import { List as AntList, ListProps as AntListProps } from "antd";
-import { ListItemProps } from "antd/lib/list";
 import classNames from "classnames";
 import React, { isValidElement, cloneElement } from "react";
 import useMergedState from "rc-util/lib/hooks/useMergedState";
-import "./index.less";
 import { usePrefixCls } from "../_utils/usePrefixCls";
+import type { ListItemProps } from "antd/es/list";
+import useElementWithStyle from "./style";
+import type { RenderNode } from "./style";
 
 type ReturnTypeOrKey<Fn, T> = Fn extends (...args: any[]) => any
   ? ReturnType<Fn>
@@ -73,7 +74,7 @@ const List = <
     } else if (rowKey) {
       key = item[rowKey as keyof T] as Q;
     } else {
-      key = (item as any).key;
+      key = (item as Record<"key", Q>).key;
     }
 
     const isSelected = key !== undefined && key === internalActiveKey;
@@ -82,11 +83,11 @@ const List = <
       return cloneElement(node, {
         onClick: (ev) => {
           setInternalActiveKey(key);
-          node.props?.onClick?.(ev);
+          (node.props as ListItemProps)?.onClick?.(ev);
           onChange?.(key, item);
         },
         className: classNames(
-          node.props?.className,
+          (node.props as ListItemProps)?.className,
           isSelected && genCls("item-active")
         ),
       } as ListItemProps);
@@ -94,14 +95,20 @@ const List = <
 
     return node;
   };
-  return (
+  const renderNode: RenderNode = (classes) => (
     <AntList
-      className={classNames(className, selectable && genCls("selectable"))}
+      className={classNames(
+        className,
+        classes,
+        selectable && genCls("selectable")
+      )}
       renderItem={internalRenderItem}
       rowKey={rowKey}
       {...restProps}
     ></AntList>
   );
+
+  return useElementWithStyle(props.prefixCls, renderNode);
 };
 
 List.Item = AntList.Item;

@@ -75,7 +75,9 @@ const Editor: FC<EditorProps> = (props) => {
       </div>
       {toolbar && (
         <div>
-          <Button onClick={() => formatCode()}>{"{ }"}</Button>
+          <Button type="text" onClick={() => formatCode()}>
+            {"{ }"}
+          </Button>
         </div>
       )}
     </div>

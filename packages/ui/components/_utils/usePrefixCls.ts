@@ -10,5 +10,7 @@ export const usePrefixCls = (
 
   const genCls = (suffix = "") => `${prefixCls}-${suffix}`;
 
-  return { prefixCls, genCls, getPrefixCls };
+  const customCls = genCls("custom");
+
+  return { prefixCls, genCls, getPrefixCls, customCls };
 };

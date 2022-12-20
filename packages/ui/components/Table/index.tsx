@@ -2,7 +2,8 @@ import { ForwardedRef, forwardRef } from "react";
 import { Table as AntTable, TableProps as AntdTableProps } from "antd";
 import classNames from "classnames";
 import { usePrefixCls } from "../_utils/usePrefixCls";
-import "./index.less";
+import useElementWithStyle from "./style";
+import type { RenderNode } from "./style";
 
 interface TableProps<RecordType> extends AntdTableProps<RecordType> {
   /**
@@ -17,18 +18,21 @@ const InternalTable = <RecordType extends object = any>(
   ref: ForwardedRef<HTMLDivElement>
 ) => {
   const { fullHeight, ...restProps } = props;
-  const { genCls } = usePrefixCls("table");
+  const { genCls } = usePrefixCls("table", props.prefixCls);
 
-  return (
+  const renderNode: RenderNode = (classes) => (
     <AntTable
       ref={ref}
       {...restProps}
       className={classNames(
         props.className,
+        classes,
         fullHeight && genCls("wrapper-full-height")
       )}
     />
   );
+
+  return useElementWithStyle(props.prefixCls, renderNode);
 };
 
 const ForwardTable = forwardRef(InternalTable) as <
@@ -48,7 +52,6 @@ type TableInterface = Pick<typeof AntTable, keyof typeof AntTable> &
 const Table = ForwardTable as TableInterface;
 
 Table.defaultProps = {
-  ...AntTable.defaultProps,
   fullHeight: true,
 };
 // copy AntTable property

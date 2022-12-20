@@ -1,25 +1,35 @@
-import { Button as AntdButton, ButtonProps } from "antd";
 import { forwardRef, Ref } from "react";
-import "./index.less";
+import { Button as AntdButton, ButtonProps } from "antd";
+import classNames from "classnames";
+import useElementWithStyle from "./style";
+import type { RenderNode } from "./style";
 
 interface CompoundedComponent
   extends React.ForwardRefExoticComponent<
     ButtonProps & React.RefAttributes<HTMLElement>
   > {
   Group: typeof AntdButton.Group;
-  __ANT_BUTTON: boolean;
 }
 
 const internalButton = (
   props: ButtonProps,
   ref: Ref<HTMLElement> | undefined
 ) => {
-  return <AntdButton ref={ref} {...props} />;
+  const { className, ...restProps } = props;
+
+  const renderNode: RenderNode = (classes) => (
+    <AntdButton
+      ref={ref}
+      className={classNames(classes, className)}
+      {...restProps}
+    />
+  );
+
+  return useElementWithStyle(props.prefixCls, renderNode);
 };
 
 const Button = forwardRef(internalButton) as CompoundedComponent;
 
-Button.__ANT_BUTTON = AntdButton.__ANT_BUTTON;
 Button.Group = AntdButton.Group;
 
 export default Button;

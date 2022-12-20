@@ -29,6 +29,5 @@ interface CompoundedComponent
 
 const Checkbox = forwardRef(InternalCheckbox) as CompoundedComponent;
 Checkbox.Group = AntCheckbox.Group;
-Checkbox.__ANT_CHECKBOX = AntCheckbox.__ANT_CHECKBOX;
 
 export default Checkbox;

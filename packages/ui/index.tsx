@@ -1,6 +1,7 @@
-export * from "antd";
+import "antd/dist/reset.css";
+import "./theme";
 
-import "./themes/index.less";
+export * from "antd";
 import Button from "./components/Button";
 export { default as Checkbox } from "./components/Checkbox";
 export type { CheckboxProps } from "./components/Checkbox";

@@ -1,7 +1,8 @@
 import { Tabs as AntTabs, TabsProps as AntTabsProps } from "antd";
 import classNames from "classnames";
 import { usePrefixCls } from "../_utils/usePrefixCls";
-import "./index.less";
+import useElementWithStyle from "./style";
+import type { RenderNode } from "./style";
 
 interface TabsProps extends AntTabsProps {
   /**
@@ -15,15 +16,18 @@ const Tabs = (props: TabsProps) => {
   const { fullHeight, ...restProps } = props;
   const { genCls } = usePrefixCls("tabs");
 
-  return (
+  const renderNode: RenderNode = (classes) => (
     <AntTabs
       {...restProps}
       className={classNames(
         props.className,
+        classes,
         fullHeight && genCls("full-height")
       )}
     />
   );
+
+  return useElementWithStyle(props.prefixCls, renderNode);
 };
 
 Tabs.defaultProps = {

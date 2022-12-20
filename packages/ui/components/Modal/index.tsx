@@ -1,7 +1,8 @@
 import { Modal as AntModal, ModalProps as AntModalProps } from "antd";
 import classNames from "classnames";
 import { usePrefixCls } from "../_utils/usePrefixCls";
-import "./index.less";
+import useElementWithStyle from "./style";
+import type { RenderNode } from "./style";
 
 interface ModalProps extends AntModalProps {
   /**
@@ -18,10 +19,21 @@ const Modal: React.FC<ModalProps> = (props) => {
   const overridingProps: Partial<ModalProps> = {
     footer: fullScreen ? footer || false : footer,
     width: fullScreen ? "100%" : width,
-    className: classNames(className, fullScreen && genCls("full-screen")),
   };
 
-  return <AntModal {...restProps} {...overridingProps} />;
+  const renderNode: RenderNode = (classes) => (
+    <AntModal
+      className={classNames(
+        classes,
+        className,
+        fullScreen && genCls("full-screen")
+      )}
+      {...restProps}
+      {...overridingProps}
+    />
+  );
+
+  return useElementWithStyle(props.prefixCls, renderNode);
 };
 
 export default Modal;
