@@ -61,7 +61,12 @@ const Headers: FC<NetWorkDetailProps> = (props) => {
   const { detail } = props;
   if (!detail) return null;
   return (
-    <Collapse className="network-detail-collapse" defaultActiveKey={["1"]}>
+    <Collapse
+      className="network-detail-collapse"
+      ghost
+      collapsible="icon"
+      defaultActiveKey={["1", "2", "3"]}
+    >
       <Collapse.Panel header="General" key="1">
         <HeadersList
           items={[

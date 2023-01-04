@@ -6,7 +6,7 @@ import { NetworkInfo } from "common/api-interceptor/types";
 import { initRuleByNetworkInfo } from "common/network-rule";
 import debugFn from "debug";
 import NetworkToolbar from "../NetworkToolbar";
-import { Modal } from "ui";
+import { Modal, Splitter } from "ui";
 import NetworkRules from "../NetworkRules";
 import { useMemoizedFn, useMount } from "ahooks";
 import { request } from "../utils/request";
@@ -124,12 +124,14 @@ const Network: FC = () => {
         disableRule={disableRule}
       />
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        <NetworkBrief
-          data={data}
-          currentNetworkDetail={currentNetworkDetail}
-          setCurrentNetworkDetail={setCurrentNetworkDetail}
-        />
-        <NetWorkDetail detail={currentNetworkDetail} />
+        <Splitter>
+          <NetworkBrief
+            data={data}
+            currentNetworkDetail={currentNetworkDetail}
+            setCurrentNetworkDetail={setCurrentNetworkDetail}
+          />
+          <NetWorkDetail detail={currentNetworkDetail} />
+        </Splitter>
       </div>
 
       <Modal

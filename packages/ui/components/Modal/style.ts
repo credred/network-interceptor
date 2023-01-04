@@ -3,7 +3,6 @@ import { genCustomComponentStyleHook } from "../theme";
 
 const useStyle = genCustomComponentStyleHook("ModalCustom", (token) => {
   const { componentCls, customCls } = token;
-  console.log(customCls, "customCls");
 
   return [
     {
@@ -27,6 +26,13 @@ const useStyle = genCustomComponentStyleHook("ModalCustom", (token) => {
           flex: 1,
           overflow: "auto",
           padding: 0,
+        },
+      },
+      [`${customCls}`]: {
+        [`${componentCls}-close-x`]: {
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         },
       },
     },

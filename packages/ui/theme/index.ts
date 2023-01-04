@@ -2,7 +2,8 @@ import { theme } from "antd";
 import { createTheme } from "@ant-design/cssinjs";
 import type { Context } from "react";
 import darkAlgorithm from "./themes/dark";
-import { DesignTokenContext } from "antd/es/theme/internal";
+import sizeAlgorithm from "./themes/size";
+
 type ContextType<T> = T extends Context<infer R> ? R : never;
 
 const { defaultConfig } = theme;
@@ -16,4 +17,5 @@ defaultConfig.token.borderRadius = 0;
 (defaultConfig as ContextType<typeof DesignTokenContext>).theme = createTheme([
   darkAlgorithm,
   theme.compactAlgorithm,
+  sizeAlgorithm,
 ]);

@@ -45,5 +45,6 @@ const genCustomComponentStyleHook = <ComponentName extends OverrideComponent>(
 };
 
 export { genCustomComponentStyleHook };
+export { genComponentStyleHook };
 
 export * from "antd/es/theme";

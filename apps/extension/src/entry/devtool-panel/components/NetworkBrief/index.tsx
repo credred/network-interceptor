@@ -3,6 +3,7 @@ import { Table, TableColumnsType } from "ui";
 import classNames from "classnames";
 import { NetworkInfo } from "common/api-interceptor";
 import { isEmpty } from "lodash";
+import useStyles from "./styles";
 
 interface NetworkBriefProps {
   data: Record<string, NetworkInfo>;
@@ -35,6 +36,12 @@ const column: TableColumnsType<NetworkInfo> = [
     dataIndex: "status",
     key: "Status",
     width: 80,
+    render: (value: number, record) => {
+      if (value === 0) {
+        return record.statusText;
+      }
+      return value;
+    },
   },
   {
     title: "Type",
@@ -45,6 +52,7 @@ const column: TableColumnsType<NetworkInfo> = [
 ];
 
 const NetworkBrief: FC<NetworkBriefProps> = (props) => {
+  const classes = useStyles();
   const { data, currentNetworkDetail, setCurrentNetworkDetail } = props;
   const dataSource = useMemo(() => Array.from(Object.values(data)), [data]);
 
@@ -53,13 +61,18 @@ const NetworkBrief: FC<NetworkBriefProps> = (props) => {
       {!isEmpty(dataSource) ? (
         <Table<NetworkInfo>
           rowKey="id"
-          className="flex-1"
+          className={classNames("flex-1", classes)}
           dataSource={dataSource}
+          rowSelection={{
+            selectedRowKeys: currentNetworkDetail?.id
+              ? [currentNetworkDetail?.id]
+              : [],
+            hideSelectionColumn: true,
+          }}
           onRow={(record) => {
             return {
               className: classNames(
-                record.id === currentNetworkDetail?.id &&
-                  "ant-table-row-selected"
+                record.status === 0 && "networkBrief-table-row-error"
               ),
               onClick: () => {
                 setCurrentNetworkDetail(record);

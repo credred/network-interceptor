@@ -4,6 +4,7 @@ import classNames from "classnames";
 import { usePrefixCls } from "../_utils/usePrefixCls";
 import useElementWithStyle from "./style";
 import type { RenderNode } from "./style";
+import { TableRowSelection } from "antd/es/table/interface";
 
 interface TableProps<RecordType> extends AntdTableProps<RecordType> {
   /**
@@ -11,19 +12,37 @@ interface TableProps<RecordType> extends AntdTableProps<RecordType> {
    * @default true
    */
   fullHeight?: boolean;
+  rowSelection?: TableRowSelection<RecordType> & {
+    hideSelectionColumn: boolean;
+  };
 }
 
 const InternalTable = <RecordType extends object = any>(
   props: TableProps<RecordType>,
   ref: ForwardedRef<HTMLDivElement>
 ) => {
-  const { fullHeight, ...restProps } = props;
+  const {
+    fullHeight,
+    rowSelection: { hideSelectionColumn, ...rowSelection } = {},
+    ...restProps
+  } = props;
   const { genCls } = usePrefixCls("table", props.prefixCls);
+  const rowSelectionProps = props.rowSelection
+    ? {
+        rowSelection: {
+          ...(hideSelectionColumn
+            ? { columnWidth: 0, renderCell: () => void 0 }
+            : {}),
+          ...rowSelection,
+        },
+      }
+    : undefined;
 
   const renderNode: RenderNode = (classes) => (
     <AntTable
       ref={ref}
       {...restProps}
+      {...rowSelectionProps}
       className={classNames(
         props.className,
         classes,

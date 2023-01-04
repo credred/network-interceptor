@@ -4,6 +4,8 @@ import { genCustomComponentStyleHook } from "../theme";
 const useStyle = genCustomComponentStyleHook("TabsCustom", (token) => {
   const { componentCls, customCls } = token;
 
+  const tabCls = `${componentCls}-tab`;
+
   return [
     {
       [`${customCls}-full-height`]: {
@@ -19,6 +21,29 @@ const useStyle = genCustomComponentStyleHook("TabsCustom", (token) => {
           "&-tabpane": {
             height: "100%",
           },
+        },
+      },
+      [customCls]: {
+        [`${tabCls}`]: {
+          padding: `${token.sizeXS}px ${token.sizeSM}px`,
+          [`&:hover`]: {
+            background: token.colorBgTextHover,
+          },
+          [`&-active`]: {
+            background: token.colorPrimaryBg,
+          },
+          [`&-active:hover`]: {
+            background: token.colorPrimaryBg,
+          },
+        },
+        [`${tabCls} + ${tabCls}`]: {
+          margin: {
+            _skip_check_: true,
+            value: `0`,
+          },
+        },
+        [`& > ${componentCls}-nav`]: {
+          margin: 0,
         },
       },
     },
