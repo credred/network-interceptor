@@ -6,6 +6,7 @@ export type RenderNode = (classes: string[], prefixCls: string) => JSX.Element;
 export interface UseElementWithStyleOptions {
   defaultPrefixCls: string;
   customizePrefixCls?: string;
+  withCustomCls?: boolean;
   useStyle: (prefixCls: string) => UseComponentStyleResult;
   renderNode: RenderNode;
 }
@@ -15,6 +16,7 @@ export const useElementWithStyle = ({
   customizePrefixCls,
   useStyle,
   renderNode,
+  withCustomCls = true,
 }: UseElementWithStyleOptions) => {
   const { prefixCls, customCls } = usePrefixCls(
     defaultPrefixCls,
@@ -23,12 +25,15 @@ export const useElementWithStyle = ({
 
   const [wrapSSR, hashId] = useStyle(prefixCls);
 
-  return wrapSSR(renderNode([hashId, customCls], prefixCls));
+  return wrapSSR(
+    renderNode(withCustomCls ? [hashId, customCls] : [hashId], prefixCls)
+  );
 };
 
 export const genUseElementWithStyle = (
   defaultPrefixCls: UseElementWithStyleOptions["defaultPrefixCls"],
-  useStyle: UseElementWithStyleOptions["useStyle"]
+  useStyle: UseElementWithStyleOptions["useStyle"],
+  withCustomCls?: boolean
 ) => {
   const useElement = (
     customizePrefixCls: UseElementWithStyleOptions["customizePrefixCls"],
@@ -39,6 +44,7 @@ export const genUseElementWithStyle = (
       customizePrefixCls,
       useStyle,
       renderNode,
+      withCustomCls,
     });
   };
 
