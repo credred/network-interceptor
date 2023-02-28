@@ -28,6 +28,7 @@
     "antd": "^5.2.3",
     "classnames": "^2.3.2",
     "monaco-editor": "^0.34.0",
-    "rc-util": "^5.28.0"
+    "rc-util": "^5.28.0",
+    "react-contexify": "^6.0.0"
   }
 }
