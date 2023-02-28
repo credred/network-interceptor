@@ -18,6 +18,7 @@ const column: TableColumnsType<NetworkInfo> = [
     key: "ruleId",
     width: 10,
     render: (value) => (value ? "*" : ""),
+    className: "!p-0 text-center",
   },
   {
     title: "Url",
