@@ -3,13 +3,19 @@ import { genFocusStyleWithSelector } from "../style";
 import { genCustomComponentStyleHook } from "../theme";
 
 const useStyle = genCustomComponentStyleHook("ButtonCustom", (token) => {
-  const { customCls } = token;
+  const { customCls, componentCls } = token;
+
   return [
     {
       [customCls]: {
         display: "inline-flex",
         alignItems: "center",
         ...genFocusStyleWithSelector(token),
+
+        [`&${componentCls}-text:not(:disabled):hover`]: {
+          backgroundColor: "initial",
+          color: "#fff",
+        },
       },
     },
   ];

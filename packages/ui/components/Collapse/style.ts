@@ -19,6 +19,10 @@ const useStyle = genCustomComponentStyleHook("CollapseCustom", (token) => {
               [`${componentCls}-expand-icon`]: {
                 paddingInlineEnd: `${token.paddingXXS}px`,
               },
+
+              [`${componentCls}-header-text`]: {
+                fontWeight: "bold",
+              },
             },
             [`${componentCls}-content`]: {
               [`& > ${componentCls}-content-box`]: {

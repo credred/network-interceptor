@@ -3,7 +3,7 @@ import { createTheme } from "@ant-design/cssinjs";
 import type { Context } from "react";
 import darkAlgorithm from "./themes/dark";
 import sizeAlgorithm from "./themes/size";
-
+import { DesignTokenContext } from "antd/es/theme/internal";
 type ContextType<T> = T extends Context<infer R> ? R : never;
 
 const { defaultConfig } = theme;
