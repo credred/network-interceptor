@@ -31,16 +31,16 @@ export const ContextMenuItem: React.FC<ContextMenuItemProps> = ({
   children,
   ...props
 }) => {
-  if (!icon) {
-    return <Item {...props}>{children}</Item>;
-  } else {
-    return (
-      <Item>
+  return (
+    <Item {...props}>
+      {icon ? (
         <Space className={"contexify_itemContent_space"} size={4}>
           {icon}
           {children}
         </Space>
-      </Item>
-    );
-  }
+      ) : (
+        children
+      )}
+    </Item>
+  );
 };
