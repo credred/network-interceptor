@@ -48,7 +48,9 @@ const HeadersList: FC<HeadersListProps> = (props) => {
         .map((item) => {
           return (
             <li key={item.label} className="leading-5 break-words">
-              <span className="mr-1">{item.label}: </span>
+              <span className="mr-1 font-bold text-color-subtitle">
+                {item.label}:{" "}
+              </span>
               <span>{item.value}</span>
             </li>
           );
@@ -161,9 +163,10 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
   const { updateResponseBody } = useRuleForUpdate(rule);
 
   return (
-    <div className="min-w-[600px] basis-0">
+    <div className="min-w-[600px] basis-0 h-full">
       <div className="h-full">
         <Tabs
+          compact
           defaultActiveKey="headers"
           items={[
             {

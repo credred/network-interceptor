@@ -18,21 +18,14 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
   const actions = {
     clear: () => props.clear(),
     onOpenRules: () => props.onOpenRules(),
-    clearRules: () => void request.clearRules(),
     toggleRecord: (enabled: boolean) => props.toggleRecord(enabled),
     disableRule: (disabled: boolean) => props.disableRule(disabled),
   };
 
   return (
     <div className="flex items-center">
-      <Button type="link" title="clear" onClick={actions.clear}>
-        <StopOutlined />
-      </Button>
-      <Button type="link" title="clear rules" onClick={actions.clearRules}>
-        <ClearOutlined />
-      </Button>
-      <Button type="link" title="show rules" onClick={actions.onOpenRules}>
-        <UnorderedListOutlined />
+      <Button type="text" title="clear" onClick={actions.clear}>
+        <StopOutlined className="text-[14px]" />
       </Button>
       <Checkbox onChange={(e) => actions.toggleRecord(e.target.checked)}>
         Request To Rule
@@ -40,6 +33,14 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
       <Checkbox onChange={(e) => actions.disableRule(e.target.checked)}>
         Disable Rule
       </Checkbox>
+      <Button
+        type="text"
+        title="show rules"
+        className="ml-auto"
+        onClick={actions.onOpenRules}
+      >
+        <UnorderedListOutlined className="text-[14px]" />
+      </Button>
     </div>
   );
 };

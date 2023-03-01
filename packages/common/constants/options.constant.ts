@@ -144,7 +144,7 @@ const RAW_STATUS_CODE_OPTIONS: (
 
 interface Group {
   label: string;
-  children: Option[];
+  children: Option<number>[];
 }
 export const STATUS_CODE_OPTIONS = RAW_STATUS_CODE_OPTIONS.reduce<Group[]>(
   (groups, items) => {

@@ -1,13 +1,23 @@
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { NetworkRule } from "common/network-rule";
 import {
   METHOD_OPTIONS,
   STATUS_CODE_OPTIONS,
 } from "common/constants/options.constant";
 import lang from "common/lang";
-import { Button, Checkbox, Editor, Input, List, Select, Tabs } from "ui";
+import {
+  Checkbox,
+  ContextMenu,
+  ContextMenuItem,
+  Editor,
+  Input,
+  List,
+  Select,
+  Tabs,
+  useContextMenu,
+} from "ui";
 import { useForm, Controller } from "react-hook-form";
-import { DeleteFilled } from "@ant-design/icons";
+import { DeleteOutlined } from "@ant-design/icons";
 import { request } from "../utils/request";
 
 interface LinkRule {
@@ -32,6 +42,36 @@ const generateLinkRules = (rules: NetworkRule[]): Record<string, LinkRule> => {
   }
 
   return linkRule;
+};
+
+const useRuleContextMenu = (handleDeleteRule: (ruleId?: string) => void) => {
+  const activeRuleRef = useRef<NetworkRule>();
+  const MENU_ID = "NetworkRulesItem";
+
+  const { show } = useContextMenu({
+    id: MENU_ID,
+  });
+
+  const showContextMenu = (
+    rule: NetworkRule,
+    params: Parameters<typeof show>[0]
+  ) => {
+    show(params);
+    activeRuleRef.current = rule;
+  };
+
+  const contextMenuNode = (
+    <ContextMenu id={MENU_ID}>
+      <ContextMenuItem
+        icon={<DeleteOutlined />}
+        onClick={() => handleDeleteRule(activeRuleRef.current?.id)}
+      >
+        <span>Delete</span>
+      </ContextMenuItem>
+    </ContextMenu>
+  );
+
+  return { showContextMenu, contextMenuNode };
 };
 
 const NetworkRules: React.FC = () => {
@@ -71,10 +111,10 @@ const NetworkRules: React.FC = () => {
     return () => subscription.unsubscribe();
   }, [watch]);
 
-  const handleRemoveRule = () => {
-    if (activeRule) {
-      void request.deleteRule(activeRule.id);
-      const linkRule = linkRules[activeRule.id];
+  const handleDeleteRule = (ruleId?: string) => {
+    if (ruleId) {
+      void request.deleteRule(ruleId);
+      const linkRule = linkRules[ruleId];
       setActiveRule(linkRule.next?.value || linkRule.pre?.value);
     }
   };
@@ -83,32 +123,35 @@ const NetworkRules: React.FC = () => {
     reset(activeRule);
   }, [activeRule]);
 
+  const { showContextMenu, contextMenuNode } =
+    useRuleContextMenu(handleDeleteRule);
+
   return (
     <div className="flex h-full">
       <section>
-        <div>
-          <Button type="link" title="delete rule" onClick={handleRemoveRule}>
-            <DeleteFilled />
-          </Button>
-        </div>
         <List
           rowKey="id"
-          className="w-[260px]"
+          className="w-[260px] h-full"
           selectable
+          bordered
           activeKey={activeRule?.id}
           dataSource={rules}
           onChange={(_, rule) => {
             setActiveRule(rule);
           }}
           renderItem={(item) => (
-            <List.Item key={item.id}>
+            <List.Item
+              key={item.id}
+              onContextMenu={(event) => showContextMenu(item, { event })}
+            >
               <div className="truncate">{item.baseMatchRule.path}</div>
               <div>{item.baseMatchRule.method}</div>
             </List.Item>
           )}
         ></List>
       </section>
-      <section className="flex-1 min-w-0 px-1 pt-1">
+      {contextMenuNode}
+      <section className="flex-1 min-w-0 mx-2">
         <div className="flex gap-2 flex-col h-full">
           <div className="flex gap-2">
             <Controller
@@ -163,7 +206,7 @@ const NetworkRules: React.FC = () => {
                             >
                               {group.children.map((item) => (
                                 <Select.Option
-                                  key={group.label + item.value}
+                                  key={`${group.label}-${item.value}`}
                                   value={item.value}
                                 >
                                   {item.label}

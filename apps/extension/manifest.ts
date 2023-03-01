@@ -8,9 +8,9 @@ const manifest: Manifest.WebExtensionManifest = {
   description: pkg.description,
   icons: {
     "16": "assets/logo-16.png",
-    "32": "assets/logo-16.png",
-    "48": "assets/logo-16.png",
-    "128": "assets/logo-16.png",
+    "32": "assets/logo-32.png",
+    "48": "assets/logo-48.png",
+    "128": "assets/logo-128.png",
   },
   background: {
     service_worker: "src/entry/background/main.ts",
