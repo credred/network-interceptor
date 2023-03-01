@@ -50,6 +50,14 @@ const NetworkRules: React.FC = () => {
   useEffect(() => {
     if (!activeRule) {
       setActiveRule(rules[0]);
+    } else {
+      // rules updated. update activeRule data
+      const newActiveRule = rules.find((rule) => rule.id === activeRule.id);
+      if (newActiveRule) {
+        setActiveRule(newActiveRule);
+      } else {
+        handleDeleteRule(activeRule.id);
+      }
     }
   }, [rules]);
 
