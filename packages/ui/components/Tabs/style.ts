@@ -42,7 +42,7 @@ const useStyle = genCustomComponentStyleHook("TabsCustom", (token) => {
             value: `0`,
           },
         },
-        [`& > ${componentCls}-nav`]: {
+        [`&-compact > ${componentCls}-nav`]: {
           margin: 0,
         },
       },

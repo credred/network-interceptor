@@ -10,10 +10,14 @@ interface TabsProps extends AntTabsProps {
    * @default true
    */
   fullHeight?: boolean;
+  /**
+   * Determine whether there is a gap between a and b
+   */
+  compact?: boolean;
 }
 
 const Tabs = (props: TabsProps) => {
-  const { fullHeight, ...restProps } = props;
+  const { fullHeight, compact, ...restProps } = props;
   const { genCls } = usePrefixCls("tabs");
 
   const renderNode: RenderNode = (classes) => (
@@ -22,7 +26,8 @@ const Tabs = (props: TabsProps) => {
       className={classNames(
         props.className,
         classes,
-        fullHeight && genCls("full-height")
+        fullHeight && genCls("full-height"),
+        compact && genCls("compact")
       )}
     />
   );
