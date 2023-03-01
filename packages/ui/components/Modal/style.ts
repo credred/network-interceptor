@@ -17,9 +17,11 @@ const useStyle = genCustomComponentStyleHook("ModalCustom", (token) => {
           display: "flex",
           flexDirection: "column",
           padding: 0,
+          background: token.colorBgLayout,
         },
         [`${componentCls}-header`]: {
           padding: "10px",
+          background: token.colorBgLayout,
         },
         [`${componentCls}-body`]: {
           minHeight: 0,

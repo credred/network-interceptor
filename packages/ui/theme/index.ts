@@ -9,7 +9,7 @@ type ContextType<T> = T extends Context<infer R> ? R : never;
 const { defaultConfig } = theme;
 
 defaultConfig.token.colorBgBase = "#141414";
-defaultConfig.token.colorPrimary = "#68a3f2";
+defaultConfig.token.colorPrimary = "#4ba3e3";
 defaultConfig.token.borderRadius = 0;
 
 (defaultConfig as ContextType<typeof DesignTokenContext>).components = {};

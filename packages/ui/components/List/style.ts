@@ -14,7 +14,7 @@ const useStyle = genCustomComponentStyleHook("ListCustom", (token) => {
             cursor: "pointer",
           },
           "&-active": {
-            backgroundColor: token.colorFill,
+            backgroundColor: token.colorFillSecondary,
             "&::before": {
               content: "' '",
               position: "absolute",
@@ -22,7 +22,7 @@ const useStyle = genCustomComponentStyleHook("ListCustom", (token) => {
               top: 0,
               bottom: 0,
               width: "2px",
-              background: token.controlItemBgActive,
+              background: token.colorPrimary,
             },
           },
         },

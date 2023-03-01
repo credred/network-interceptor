@@ -42,10 +42,10 @@ function mix(rgb1: RgbObject, rgb2: RgbObject, amount: number): RgbObject {
 
 // 暗色主题颜色映射关系表
 const darkColorMap = [
-  { index: 7, opacity: 0.15 },
-  { index: 6, opacity: 0.25 },
-  { index: 5, opacity: 0.3 },
+  { index: 7, opacity: 0.3 },
+  { index: 6, opacity: 0.35 },
   { index: 5, opacity: 0.45 },
+  { index: 5, opacity: 0.55 },
   { index: 5, opacity: 0.65 },
   { index: 5, opacity: 0.85 },
   { index: 4, opacity: 0.9 },

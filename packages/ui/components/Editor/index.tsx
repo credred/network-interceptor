@@ -2,13 +2,16 @@ import * as monaco from "monaco-editor";
 import MonacoEditor, { loader } from "@monaco-editor/react";
 import type * as EditorType from "@monaco-editor/react";
 import { FC, useRef } from "react";
-import { Button } from "antd";
 import { useMemoizedFn } from "ahooks";
+import classNames from "classnames";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
 import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
+import useElementWithStyle, { RenderNode } from "./style";
+import { usePrefixCls } from "../_utils/usePrefixCls";
+import Button from "../Button";
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
@@ -31,6 +34,7 @@ self.MonacoEnvironment = {
 loader.config({ monaco });
 
 interface EditorProps extends EditorType.EditorProps {
+  prefixCls?: string;
   /** show toolbar */
   toolbar?: boolean;
   /** An event is emitted when the content of the current model is changed by user input */
@@ -40,7 +44,8 @@ interface EditorProps extends EditorType.EditorProps {
 }
 
 const Editor: FC<EditorProps> = (props) => {
-  const { toolbar = true, onValueChange, ...restProps } = props;
+  const { toolbar = true, prefixCls, onValueChange, ...editorProps } = props;
+  const { prefixCls: componentCls, genCls } = usePrefixCls("editor", prefixCls);
   const { value } = props;
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
 
@@ -60,21 +65,21 @@ const Editor: FC<EditorProps> = (props) => {
     onValueChange?.(newValue, ev);
   });
 
-  return (
-    <div className="h-full flex flex-col">
+  const renderNode: RenderNode = (classes) => (
+    <div className={classNames("h-full flex flex-col", classes, componentCls)}>
       <div className="min-h-0 flex-1">
         <MonacoEditor
           options={{
             formatOnPaste: true,
             formatOnType: true,
           }}
-          {...restProps}
+          {...editorProps}
           onMount={onEditorMount}
           onChange={onChange}
         />
       </div>
       {toolbar && (
-        <div>
+        <div className={genCls("toolbar")}>
           <Button type="text" onClick={() => formatCode()}>
             {"{ }"}
           </Button>
@@ -82,6 +87,8 @@ const Editor: FC<EditorProps> = (props) => {
       )}
     </div>
   );
+
+  return useElementWithStyle(props.prefixCls, renderNode);
 };
 
 export default Editor;

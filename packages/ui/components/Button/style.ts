@@ -11,10 +11,11 @@ const useStyle = genCustomComponentStyleHook("ButtonCustom", (token) => {
         display: "inline-flex",
         alignItems: "center",
         ...genFocusStyleWithSelector(token),
-
+        [`&${componentCls}-text`]: {
+          color: token.colorTextSecondary,
+        },
         [`&${componentCls}-text:not(:disabled):hover`]: {
           backgroundColor: "initial",
-          color: "#fff",
         },
       },
     },
