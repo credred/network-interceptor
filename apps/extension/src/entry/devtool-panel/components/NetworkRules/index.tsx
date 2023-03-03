@@ -137,7 +137,7 @@ const NetworkRules: React.FC = () => {
     useRuleContextMenu(handleDeleteRule);
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full min-h-[200px]">
       <List
         rowKey="id"
         header={
@@ -203,6 +203,8 @@ const NetworkRules: React.FC = () => {
               )}
             />
             <Tabs
+              className="flex-1 min-h-0"
+              fullHeight={false}
               items={[
                 {
                   label: "Response",
