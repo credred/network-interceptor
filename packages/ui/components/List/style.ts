@@ -7,6 +7,11 @@ const useStyle = genCustomComponentStyleHook("ListCustom", (token) => {
   return [
     {
       [`${customCls}`]: {
+        [`&-compact`]: {
+          [`${componentCls}-header, ${componentCls}-footer`]: {
+            padding: 0,
+          },
+        },
         [`${componentCls}-item`]: {
           padding: 8,
           position: "relative",
@@ -14,15 +19,9 @@ const useStyle = genCustomComponentStyleHook("ListCustom", (token) => {
             cursor: "pointer",
           },
           "&-active": {
-            backgroundColor: token.colorFillSecondary,
-            "&::before": {
-              content: "' '",
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: "2px",
-              background: token.colorPrimary,
+            backgroundColor: token.controlItemBgActive,
+            "&:hover": {
+              backgroundColor: token.controlItemBgActiveHover,
             },
           },
         },

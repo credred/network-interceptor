@@ -38,7 +38,12 @@ interface ListProps<
   R extends ((item: T) => React.Key) | keyof T,
   Q = ReturnTypeOrKey<R, T>
 > extends Omit<AntListProps<T>, "rowKey">,
-    ListSelectable<T, R, Q> {}
+    ListSelectable<T, R, Q> {
+  /**
+   * Determine whether there is padding in the header and footer
+   */
+  compact?: boolean;
+}
 
 const List = <
   T,
@@ -55,6 +60,7 @@ const List = <
     rowKey,
     renderItem,
     className,
+    compact,
     ...restProps
   } = props;
   const { genCls } = usePrefixCls("list", props.prefixCls);
@@ -100,7 +106,8 @@ const List = <
       className={classNames(
         className,
         classes,
-        selectable && genCls("selectable")
+        selectable && genCls("selectable"),
+        compact && genCls("compact")
       )}
       renderItem={internalRenderItem}
       rowKey={rowKey}
