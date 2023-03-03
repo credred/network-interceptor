@@ -2,6 +2,7 @@ import { match as pathMath } from "path-to-regexp";
 import uid from "tiny-uid";
 import { NetworkInfo } from "../api-interceptor";
 import { RULE_All_METHOD } from "../constants/options.constant";
+import { METHOD } from "../models/rule.model";
 import { NetworkModifyInfo, NetworkRule } from "./types";
 
 export * from "./types";
@@ -68,6 +69,22 @@ export const initRuleByNetworkInfo = (
         statusText: "OK",
       },
     },
+  };
+};
+
+export const initRule = (): NetworkRule => {
+  return {
+    id: uid(),
+    modifyInfo: {
+      response: {
+        status: 200,
+      },
+    },
+    baseMatchRule: {
+      method: METHOD.GET,
+      path: "/",
+    },
+    advanceMatchRules: [],
   };
 };
 

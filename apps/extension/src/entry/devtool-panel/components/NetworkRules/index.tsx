@@ -1,15 +1,17 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { NetworkRule } from "common/network-rule";
+import { initRule, NetworkRule } from "common/network-rule";
 import {
   METHOD_OPTIONS,
   STATUS_CODE_OPTIONS,
 } from "common/constants/options.constant";
 import lang from "common/lang";
 import {
+  Button,
   Checkbox,
   ContextMenu,
   ContextMenuItem,
   Editor,
+  Empty,
   Input,
   List,
   Select,
@@ -17,7 +19,7 @@ import {
   useContextMenu,
 } from "ui";
 import { useForm, Controller } from "react-hook-form";
-import { DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { request } from "../utils/request";
 
 interface LinkRule {
@@ -105,7 +107,7 @@ const NetworkRules: React.FC = () => {
 
   useEffect(() => {
     const subscription = watch((value, { type }) => {
-      if (type !== "change") return;
+      if (type !== "change" || !value) return;
       void request.updateRule(value as NetworkRule);
     });
     return () => subscription.unsubscribe();
@@ -119,8 +121,16 @@ const NetworkRules: React.FC = () => {
     }
   };
 
+  const handleNewRule = () => {
+    const rule = initRule();
+    void request.createRule(rule).then(() => {
+      setActiveRule(rule);
+    });
+  };
+
   useEffect(() => {
-    reset(activeRule);
+    // defaultValue will be modified if keepDefaultValues is not true
+    reset(activeRule, { keepDefaultValues: true });
   }, [activeRule]);
 
   const { showContextMenu, contextMenuNode } =
@@ -128,125 +138,136 @@ const NetworkRules: React.FC = () => {
 
   return (
     <div className="flex h-full">
-      <section>
-        <List
-          rowKey="id"
-          className="w-[260px] h-full"
-          selectable
-          bordered
-          activeKey={activeRule?.id}
-          dataSource={rules}
-          onChange={(_, rule) => {
-            setActiveRule(rule);
-          }}
-          renderItem={(item) => (
-            <List.Item
-              key={item.id}
-              onContextMenu={(event) => showContextMenu(item, { event })}
-            >
-              <div className="truncate">{item.baseMatchRule.path}</div>
-              <div>{item.baseMatchRule.method}</div>
-            </List.Item>
-          )}
-        ></List>
-      </section>
+      <List
+        rowKey="id"
+        header={
+          <Button type="text" icon={<PlusOutlined />} onClick={handleNewRule}>
+            New Rule
+          </Button>
+        }
+        className="w-[260px] h-full"
+        selectable
+        compact
+        bordered
+        activeKey={activeRule?.id}
+        dataSource={rules}
+        onChange={(_, rule) => {
+          setActiveRule(rule);
+        }}
+        renderItem={(item) => (
+          <List.Item
+            key={item.id}
+            onContextMenu={(event) => showContextMenu(item, { event })}
+          >
+            <div className="truncate">{item.baseMatchRule.path}</div>
+            <div>{item.baseMatchRule.method}</div>
+          </List.Item>
+        )}
+      ></List>
       {contextMenuNode}
       <section className="flex-1 min-w-0 mx-2">
-        <div className="flex gap-2 flex-col h-full">
-          <div className="flex gap-2">
-            <Controller
-              control={control}
-              name="baseMatchRule.method"
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  className="w-[100px]"
-                  options={METHOD_OPTIONS}
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="baseMatchRule.path"
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  className="flex-1"
-                  placeholder={lang.rule.pathPlaceHolder}
-                />
-              )}
-            />
-          </div>
+        {activeRule ? (
+          <div className="flex gap-2 flex-col h-full">
+            <div className="flex gap-2">
+              <Controller
+                control={control}
+                name="baseMatchRule.method"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    className="w-[100px]"
+                    options={METHOD_OPTIONS}
+                  />
+                )}
+              />
+              <Controller
+                control={control}
+                name="baseMatchRule.path"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    className="flex-1"
+                    placeholder={lang.rule.pathPlaceHolder}
+                  />
+                )}
+              />
+            </div>
 
-          <Controller
-            control={control}
-            name="modifyInfo.continueRequest"
-            render={({ field }) => (
-              <Checkbox className="self-start" {...field}>
-                Continue Request
-              </Checkbox>
-            )}
+            <Controller
+              control={control}
+              name="modifyInfo.continueRequest"
+              render={({ field }) => (
+                <Checkbox className="self-start" {...field}>
+                  Continue Request
+                </Checkbox>
+              )}
+            />
+            <Tabs
+              items={[
+                {
+                  label: "Response",
+                  key: "response",
+                  children: (
+                    <div className="flex flex-col gap-2 h-full">
+                      <Controller
+                        control={control}
+                        name="modifyInfo.response.status"
+                        render={({ field }) => (
+                          <Select {...field} className="w-[250px]" showSearch>
+                            {STATUS_CODE_OPTIONS.map((group) => (
+                              <Select.OptGroup
+                                key={group.label}
+                                label={group.label}
+                              >
+                                {group.children.map((item) => (
+                                  <Select.Option
+                                    key={`${group.label}-${item.value}`}
+                                    value={item.value}
+                                  >
+                                    {item.label}
+                                  </Select.Option>
+                                ))}
+                              </Select.OptGroup>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                      <Controller
+                        control={control}
+                        name="modifyInfo.response.responseBody"
+                        render={({ field: { ref, ...field } }) => (
+                          <Editor
+                            {...field}
+                            className="flex-1"
+                            theme="vs-dark"
+                            language="json"
+                          ></Editor>
+                        )}
+                      />
+                    </div>
+                  ),
+                },
+                {
+                  label: "Response Headers",
+                  key: "response headers",
+                },
+                {
+                  label: "Request",
+                  key: "request",
+                },
+                {
+                  label: "Request Headers",
+                  key: "request headers",
+                },
+              ]}
+            ></Tabs>
+          </div>
+        ) : (
+          <Empty
+            description={"No rule defined"}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
-          <Tabs
-            items={[
-              {
-                label: "Response",
-                key: "response",
-                children: (
-                  <div className="flex flex-col gap-2 h-full">
-                    <Controller
-                      control={control}
-                      name="modifyInfo.response.status"
-                      render={({ field }) => (
-                        <Select {...field} className="w-[250px]" showSearch>
-                          {STATUS_CODE_OPTIONS.map((group) => (
-                            <Select.OptGroup
-                              key={group.label}
-                              label={group.label}
-                            >
-                              {group.children.map((item) => (
-                                <Select.Option
-                                  key={`${group.label}-${item.value}`}
-                                  value={item.value}
-                                >
-                                  {item.label}
-                                </Select.Option>
-                              ))}
-                            </Select.OptGroup>
-                          ))}
-                        </Select>
-                      )}
-                    />
-                    <Controller
-                      control={control}
-                      name="modifyInfo.response.responseBody"
-                      render={({ field: { ref, ...field } }) => (
-                        <Editor
-                          {...field}
-                          className="flex-1"
-                          theme="vs-dark"
-                          language="json"
-                        ></Editor>
-                      )}
-                    />
-                  </div>
-                ),
-              },
-              {
-                label: "Response Headers",
-                key: "response headers",
-              },
-              {
-                label: "Request",
-                key: "request",
-              },
-              {
-                label: "Request Headers",
-                key: "request headers",
-              },
-            ]}
-          ></Tabs>
-        </div>
+        )}
       </section>
     </div>
   );
