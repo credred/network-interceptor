@@ -7,6 +7,19 @@ const useStyle = genCustomComponentStyleHook("ListCustom", (token) => {
   return [
     {
       [`${customCls}`]: {
+        display: "flex",
+        flexDirection: "column",
+
+        [`${componentCls}-header, ${componentCls}-footer`]: {
+          flexShrink: 0,
+        },
+
+        [`& > .ant-spin-nested-loading`]: {
+          flex: 1,
+          minHeight: 0,
+          overflow: "auto",
+        },
+
         [`&-compact`]: {
           [`${componentCls}-header, ${componentCls}-footer`]: {
             padding: 0,
