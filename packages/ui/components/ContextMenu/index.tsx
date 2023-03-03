@@ -6,7 +6,7 @@ export type {
   UseContextMenuParams,
   ShowContextMenuParams,
 } from "react-contexify";
-import { Menu, Item } from "react-contexify";
+import { Menu, Item, useContextMenu } from "react-contexify";
 import type { MenuProps, ItemProps } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
 import "./index.less";
@@ -19,10 +19,24 @@ export interface ContextMenuItemProps extends ItemProps {
 }
 
 export const ContextMenu: React.FC<MenuProps> = ({ className, ...props }) => {
-  return useElementWithStyle("", (classes) => {
-    console.log("classes", classes);
+  const { hideAll } = useContextMenu({
+    id: props.id,
+  });
 
-    return <Menu {...props} className={classNames(className, classes)} />;
+  const onContextMenu: React.MouseEventHandler<HTMLElement> = (e) => {
+    e.preventDefault();
+    hideAll();
+    props.onContextMenu?.(e);
+  };
+
+  return useElementWithStyle("", (classes) => {
+    return (
+      <Menu
+        {...props}
+        className={classNames(className, classes)}
+        onContextMenu={onContextMenu}
+      />
+    );
   });
 };
 
