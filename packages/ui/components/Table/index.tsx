@@ -7,6 +7,7 @@ import type { RenderNode } from "./style";
 import { TableRowSelection } from "antd/es/table/interface";
 
 interface TableProps<RecordType> extends AntdTableProps<RecordType> {
+  hideEmpty?: boolean;
   /**
    * set table height as 100%
    * @default true
@@ -22,6 +23,7 @@ const InternalTable = <RecordType extends object = any>(
   ref: ForwardedRef<HTMLDivElement>
 ) => {
   const {
+    hideEmpty,
     fullHeight,
     rowSelection: { hideSelectionColumn, ...rowSelection } = {},
     ...restProps
@@ -46,7 +48,8 @@ const InternalTable = <RecordType extends object = any>(
       className={classNames(
         props.className,
         classes,
-        fullHeight && genCls("wrapper-full-height")
+        fullHeight && genCls("wrapper-full-height"),
+        hideEmpty && genCls("hide-empty")
       )}
     />
   );

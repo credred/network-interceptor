@@ -28,6 +28,11 @@ const useStyle = genCustomComponentStyleHook("TableCustom", (token) => {
           },
         },
       },
+      [`${customCls}`]: {
+        [`${componentCls}-placeholder`]: {
+          display: "none",
+        },
+      },
     },
   ];
 });
