@@ -10,6 +10,7 @@ coverage
 
 # artifact
 dist
+dev-dist
 
 # misc
 .DS_Store
