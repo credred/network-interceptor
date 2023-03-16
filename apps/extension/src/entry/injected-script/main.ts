@@ -3,13 +3,17 @@ import {
   createInterceptedFetch,
   createInterceptedXhr,
 } from "common/api-interceptor";
-import { disableRule } from "common/network-rule";
 import { InterceptorConfig } from "common/api-interceptor/types";
+
+let ruleDisabled = false;
 
 const oldFetch = fetch;
 const oldXhr = XMLHttpRequest;
 const interceptorConfig: InterceptorConfig = {
-  matchRule: (requestInfo) => {
+  matchRule: async (requestInfo) => {
+    if (ruleDisabled) {
+      return undefined;
+    }
     return sendMessage("matchRule", requestInfo, "background");
   },
   requestWillBeSent: (requestInfo) => {
@@ -33,7 +37,7 @@ setTimeout(() => {
 });
 
 onMessage("disableRule", (message) => {
-  disableRule(message.data);
+  ruleDisabled = message.data;
 });
 
 setNamespace("network-interceptor");
