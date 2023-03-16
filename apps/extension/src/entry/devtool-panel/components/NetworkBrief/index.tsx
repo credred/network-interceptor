@@ -1,12 +1,12 @@
-import { FC, useMemo } from "react";
+import { FC } from "react";
 import { Table, TableColumnsType } from "ui";
 import classNames from "classnames";
 import { NetworkInfo } from "common/api-interceptor";
-import { isEmpty } from "lodash";
 import useStyles from "./styles";
 
 interface NetworkBriefProps {
-  data: Record<string, NetworkInfo>;
+  dataSource: NetworkInfo[];
+  isEmpty: boolean;
   currentNetworkDetail: NetworkInfo | undefined;
   setCurrentNetworkDetail: (detail: NetworkInfo | undefined) => void;
 }
@@ -54,16 +54,17 @@ const column: TableColumnsType<NetworkInfo> = [
 
 const NetworkBrief: FC<NetworkBriefProps> = (props) => {
   const classes = useStyles();
-  const { data, currentNetworkDetail, setCurrentNetworkDetail } = props;
-  const dataSource = useMemo(() => Array.from(Object.values(data)), [data]);
+  const { dataSource, isEmpty, currentNetworkDetail, setCurrentNetworkDetail } =
+    props;
 
   return (
     <>
-      {!isEmpty(dataSource) ? (
+      {!isEmpty ? (
         <Table<NetworkInfo>
           rowKey="id"
           className={classNames("flex-1", classes)}
           dataSource={dataSource}
+          hideEmpty
           rowSelection={{
             selectedRowKeys: currentNetworkDetail?.id
               ? [currentNetworkDetail?.id]

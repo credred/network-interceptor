@@ -1,15 +1,11 @@
-import { Button, Checkbox } from "ui";
-import {
-  ClearOutlined,
-  StopOutlined,
-  UnorderedListOutlined,
-} from "@ant-design/icons";
+import { Button, Checkbox, Divider, Input } from "ui";
+import { StopOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { FC } from "react";
-import { request } from "../utils/request";
 
 interface NetworkToolbarProps {
   clear: () => void;
   onOpenRules: () => void;
+  search: (value: string) => void;
   toggleRecord: (enabled: boolean) => void;
   disableRule: (disabled: boolean) => void;
 }
@@ -18,6 +14,7 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
   const actions = {
     clear: () => props.clear(),
     onOpenRules: () => props.onOpenRules(),
+    search: props.search,
     toggleRecord: (enabled: boolean) => props.toggleRecord(enabled),
     disableRule: (disabled: boolean) => props.disableRule(disabled),
   };
@@ -27,6 +24,14 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
       <Button type="text" title="clear" onClick={actions.clear}>
         <StopOutlined className="text-[14px]" />
       </Button>
+      <Divider type="vertical" />
+      <Input
+        size="small"
+        className="w-48"
+        placeholder="Filter"
+        onChange={(e) => actions.search(e.target.value)}
+      />
+      <Divider type="vertical" />
       <Checkbox onChange={(e) => actions.toggleRecord(e.target.checked)}>
         Request To Rule
       </Checkbox>

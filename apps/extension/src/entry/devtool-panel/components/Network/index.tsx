@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { onMessage, sendMessage } from "webext-bridge/devtools";
 import NetworkBrief from "../NetworkBrief";
 import NetWorkDetail from "../NetworkDetail";
@@ -10,6 +10,7 @@ import { Modal, Splitter } from "ui";
 import NetworkRules from "../NetworkRules";
 import { useMemoizedFn, useMount } from "ahooks";
 import { request } from "../utils/request";
+import useFilterNetworkInfo from "./useFilterNetworkInfo";
 const debug = debugFn("Network-Manager");
 
 const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
@@ -70,11 +71,37 @@ const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
   return [data, setData] as const;
 };
 
+const useDataManager = (onReceive: (networkInfo: NetworkInfo) => void) => {
+  const [data, setData] = useData(onReceive);
+  const originNetworkInfoList = useMemo(
+    () => Array.from(Object.values(data)),
+    [data]
+  );
+  const { filteredList: networkInfoList, doFilter } = useFilterNetworkInfo(
+    originNetworkInfoList
+  );
+  const filteredData = networkInfoList.reduce<Record<string, NetworkInfo>>(
+    (filteredData, networkInfo) => {
+      filteredData[networkInfo.id] = networkInfo;
+      return filteredData;
+    },
+    {}
+  );
+  return {
+    networkInfoList,
+    isEmpty: !originNetworkInfoList.length,
+    data: filteredData,
+    clearData: () => setData({}),
+    doFilter,
+  };
+};
+
 const useCurrentNetworkDetail = (data: Record<string, NetworkInfo>) => {
   const [currentNetworkDetail, setCurrentNetworkDetail] =
     useState<NetworkInfo>();
 
   useEffect(() => {
+    // latestCurrentNetworkDetail may be updated or removed by filter
     const latestCurrentNetworkDetail =
       currentNetworkDetail && data[currentNetworkDetail.id];
     if (
@@ -92,12 +119,13 @@ const Network: FC = () => {
   const [enableRecord, setEnableRecord] = useState(false);
   const ruleDisabled = useRef(false);
 
-  const [data, setData] = useData((networkInfo) => {
-    if (enableRecord && !networkInfo.ruleId && networkInfo.responseBody) {
-      const rule = initRuleByNetworkInfo(networkInfo);
-      void request.updateRule(rule);
-    }
-  });
+  const { data, networkInfoList, isEmpty, doFilter, clearData } =
+    useDataManager((networkInfo) => {
+      if (enableRecord && !networkInfo.ruleId && networkInfo.responseBody) {
+        const rule = initRuleByNetworkInfo(networkInfo);
+        void request.updateRule(rule);
+      }
+    });
   const [currentNetworkDetail, setCurrentNetworkDetail] =
     useCurrentNetworkDetail(data);
   const [rulesVisible, setRulesVisible] = useState(false);
@@ -118,15 +146,17 @@ const Network: FC = () => {
   return (
     <div className="h-full flex flex-col">
       <NetworkToolbar
-        clear={() => setData({})}
+        clear={clearData}
         toggleRecord={setEnableRecord}
+        search={doFilter}
         onOpenRules={() => setRulesVisible(true)}
         disableRule={disableRule}
       />
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <Splitter>
           <NetworkBrief
-            data={data}
+            dataSource={networkInfoList}
+            isEmpty={isEmpty}
             currentNetworkDetail={currentNetworkDetail}
             setCurrentNetworkDetail={setCurrentNetworkDetail}
           />
