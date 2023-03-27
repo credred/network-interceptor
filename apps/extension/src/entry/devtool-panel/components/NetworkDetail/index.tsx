@@ -179,6 +179,8 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
               key: "response",
               children: (
                 <Editor
+                  seed={networkInfo?.id}
+                  autoFormat
                   options={{ readOnly: !networkInfo?.responseBodyParsable }}
                   theme="vs-dark"
                   language={lang}
