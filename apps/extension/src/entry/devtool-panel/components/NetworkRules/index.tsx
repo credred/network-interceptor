@@ -204,7 +204,7 @@ const NetworkRules: React.FC = () => {
             />
             <Tabs
               className="flex-1 min-h-0"
-              fullHeight={false}
+              fullHeight={true}
               items={[
                 {
                   label: "Response",
@@ -240,7 +240,7 @@ const NetworkRules: React.FC = () => {
                         render={({ field: { ref, ...field } }) => (
                           <Editor
                             {...field}
-                            className="flex-1"
+                            flex
                             theme="vs-dark"
                             language="json"
                           ></Editor>
