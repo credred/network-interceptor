@@ -34,6 +34,10 @@ self.MonacoEnvironment = {
 loader.config({ monaco });
 
 interface EditorProps extends EditorType.EditorProps {
+  /**
+   * the wrapper style should be flex-grow: 1; or height: 100%;
+   */
+  flex?: boolean;
   prefixCls?: string;
   /** show toolbar */
   toolbar?: boolean;
@@ -44,9 +48,16 @@ interface EditorProps extends EditorType.EditorProps {
 }
 
 const Editor: FC<EditorProps> = (props) => {
-  const { toolbar = true, prefixCls, onValueChange, ...editorProps } = props;
+  const {
+    toolbar = true,
+    flex,
+    prefixCls,
+    onValueChange,
+    ...editorProps
+  } = props;
   const { prefixCls: componentCls, genCls } = usePrefixCls("editor", prefixCls);
   const { value } = props;
+
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
 
   const formatCode = () => {
@@ -66,7 +77,14 @@ const Editor: FC<EditorProps> = (props) => {
   });
 
   const renderNode: RenderNode = (classes) => (
-    <div className={classNames("h-full flex flex-col", classes, componentCls)}>
+    <div
+      className={classNames(
+        "flex flex-col min-h-0",
+        flex ? "flex-1" : "h-full",
+        classes,
+        componentCls
+      )}
+    >
       <div className="min-h-0 flex-1">
         <MonacoEditor
           options={{
