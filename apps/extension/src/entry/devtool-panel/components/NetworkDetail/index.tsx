@@ -34,7 +34,7 @@ const detectLang = (headers?: Record<string, string>) => {
 
   const contentType = headers["content-type"];
 
-  if (contentType.includes("json")) {
+  if (contentType?.includes("json")) {
     return "json";
   }
 };
