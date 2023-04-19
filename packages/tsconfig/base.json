@@ -19,6 +19,7 @@
     "useDefineForClassFields": true,
     "allowJs": false,
     "noEmit": true,
+    "preserveSymlinks": true,
     "jsx": "react-jsx",
     "strict": true
   },

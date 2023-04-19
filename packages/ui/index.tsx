@@ -14,5 +14,7 @@ import Tabs from "./components/Tabs";
 import Modal from "./components/Modal";
 import Editor from "./components/Editor";
 import List from "./components/List";
+import { theme } from "antd";
+const { useToken } = theme;
 
-export { Button, Table, Tabs, Modal, Editor, List };
+export { Button, Table, Tabs, Modal, Editor, List, useToken };
