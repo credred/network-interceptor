@@ -5,13 +5,14 @@ import {
 } from "common/api-interceptor";
 import { InterceptorConfig } from "common/api-interceptor/types";
 
+let allSiteDisabled = false;
 let ruleDisabled = false;
 
 const oldFetch = fetch;
 const oldXhr = XMLHttpRequest;
 const interceptorConfig: InterceptorConfig = {
   matchRule: async (requestInfo) => {
-    if (ruleDisabled) {
+    if (ruleDisabled || allSiteDisabled) {
       return undefined;
     }
     return sendMessage("matchRule", requestInfo, "background");
@@ -34,10 +35,15 @@ window.XMLHttpRequest = newXhr;
 // so we should use setTimeout to wrap the sendMessage code
 setTimeout(() => {
   void sendMessage("pageLoad", undefined, "devtools");
+  void sendMessage("pageLoad", undefined, "content-script");
 });
 
 onMessage("disableRule", (message) => {
   ruleDisabled = message.data;
+});
+
+onMessage("allSiteEnabled", (message) => {
+  allSiteDisabled = !message.data;
 });
 
 setNamespace("network-interceptor");

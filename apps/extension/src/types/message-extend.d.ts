@@ -6,6 +6,7 @@ import { StorageProtocolMap } from "../lib/storage/message";
 
 declare module "webext-bridge" {
   export interface ProtocolMap extends StorageProtocolMap {
+    allSiteEnabled: boolean;
     disableRule: boolean;
     pageLoad: void;
     request: RequestInfo;

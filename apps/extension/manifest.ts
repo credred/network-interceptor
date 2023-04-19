@@ -15,6 +15,9 @@ const manifest: Manifest.WebExtensionManifest = {
   background: {
     service_worker: "src/entry/background/main.ts",
   },
+  action: {
+    default_popup: "src/entry/popup/index.html",
+  },
   content_scripts: [
     {
       run_at: "document_start",
