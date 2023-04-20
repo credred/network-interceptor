@@ -303,8 +303,11 @@ export const createInterceptedXhr = (
         (["", "text"].includes(this.originXhr.responseType) &&
           xhr?.responseText) ||
         "";
-      // TODO: XML support (overrideMimeType responseType==='document')
-      this.#responseXML = xhr?.responseXML || null;
+      // TODO: XML support override
+      this.#responseXML =
+        (["", "document"].includes(this.originXhr.responseType) &&
+          xhr?.responseXML) ||
+        null;
       this.#status = modifyInfo?.status || xhr?.status || 200;
       this.#statusText = modifyInfo?.statusText || xhr?.statusText || "";
       this.#responseHeaders =
