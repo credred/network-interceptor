@@ -47,7 +47,7 @@ const HeadersList: FC<HeadersListProps> = (props) => {
         .filter((item) => item.value)
         .map((item) => {
           return (
-            <li key={item.label} className="leading-5 break-words">
+            <li key={item.label} className="leading-5 break-words break-all">
               <span className="mr-1 font-bold text-color-subtitle">
                 {item.label}:{" "}
               </span>
