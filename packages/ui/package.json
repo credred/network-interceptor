@@ -14,8 +14,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tsconfig": "workspace:*",
-    "typescript": "^4.5.2",
-    "vite": "^3.1.8"
+    "typescript": "^5.0.4",
+    "vite": "^4.3.5"
   },
   "dependencies": {
     "@ant-design/colors": "^7.0.0",
@@ -25,7 +25,7 @@
     "@monaco-editor/react": "^4.4.6",
     "ahooks": "^3.7.2",
     "allotment": "^1.17.1",
-    "antd": "^5.2.3",
+    "antd": "^5.4.0",
     "classnames": "^2.3.2",
     "monaco-editor": "^0.34.0",
     "rc-util": "^5.28.0",
