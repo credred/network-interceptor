@@ -15,6 +15,9 @@ import Modal from "./components/Modal";
 import Editor from "./components/Editor";
 import List from "./components/List";
 import { theme } from "antd";
-const { useToken } = theme;
+
+// typescript limitation https://github.com/microsoft/TypeScript/issues/47663#issuecomment-1519138189
+const useToken: (typeof theme)["useToken"] = theme.useToken;
+// const { useToken } = theme;
 
 export { Button, Table, Tabs, Modal, Editor, List, useToken };
