@@ -2,6 +2,7 @@ import {
   NetworkModifyInfo,
   shouldContinueRequest,
 } from "../../../network-rule";
+import { assertNonNil } from "../../../utils";
 import { InterceptorConfig, ResponseInfo } from "../../types";
 import {
   applyModifyInfoToRequestInfo,
@@ -87,7 +88,7 @@ export const createInterceptedFetch = (
           originResponseInfo,
           networkModifyInfo?.response
         );
-      } catch (e) {
+      } catch (err) {
         if (networkModifyInfo?.response) {
           // make the response successful
           responseInfo = generateResponseInfoByModifyInfo(
@@ -96,18 +97,20 @@ export const createInterceptedFetch = (
           );
         } else {
           config.responseReceived(generateErrorResponseInfo(requestInfo));
-          throw e;
+          throw (err as Error).message;
         }
       }
     } else {
-      // networkModifyInfo must not be undefined
+      // networkModifyInfo must not be undefined because of shouldContinueRequest called
+      assertNonNil(networkModifyInfo);
       responseInfo = generateResponseInfoByModifyInfo(
-        networkModifyInfo!.response,
+        networkModifyInfo.response,
         requestInfo
       );
     }
     config.responseReceived(responseInfo);
     // one of response or networkModifyInfo must not be undefined
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     response = generateFetchResponseByModifyInfo(
       networkModifyInfo?.response,
       response
