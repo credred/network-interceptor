@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { crx, ManifestV3Export } from "@crxjs/vite-plugin";
+import crx, { ManifestV3Export } from "./scripts/crx-iife-plugin";
 import manifest from "./manifest";
 
 // https://vitejs.dev/config/
@@ -18,6 +18,9 @@ export default defineConfig(({ command }) => ({
   server: {
     watch: {
       ignored: ["**/dev-dist/**", "**/dist/**"],
+    },
+    hmr: {
+      port: 24679,
     },
   },
   build: {

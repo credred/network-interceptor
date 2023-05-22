@@ -21,7 +21,13 @@ const manifest: Manifest.WebExtensionManifest = {
   content_scripts: [
     {
       run_at: "document_start",
-      js: ["src/entry/content-scripts/main.ts"],
+      js: ["src/entry/content-scripts/main.ts?script&iife"],
+      matches: ["<all_urls>"],
+    },
+    {
+      run_at: "document_start",
+      world: "MAIN",
+      js: ["src/entry/injected-script/main.ts?script&iife"],
       matches: ["<all_urls>"],
     },
   ],
