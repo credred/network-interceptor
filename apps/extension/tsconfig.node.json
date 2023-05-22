@@ -1,10 +1,9 @@
 {
+  "extends": "tsconfig/base.json",
   "compilerOptions": {
     "composite": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "module": "ESNext"
   },
-  "include": ["vite.config.ts", "manifest.ts", "package.json"]
+  "files": [],
+  "include": ["vite.config.ts", "manifest.ts", "scripts/**/*", "package.json"]
 }
