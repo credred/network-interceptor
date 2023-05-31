@@ -6,7 +6,7 @@ import useElementWithStyle from "./style";
 import type { RenderNode } from "./style";
 import { TableRowSelection } from "antd/es/table/interface";
 
-interface TableProps<RecordType> extends AntdTableProps<RecordType> {
+export interface TableProps<RecordType> extends AntdTableProps<RecordType> {
   hideEmpty?: boolean;
   /**
    * set table height as 100%

@@ -8,7 +8,8 @@ export const usePrefixCls = (
   const { getPrefixCls } = useContext(ConfigProvider.ConfigContext);
   const prefixCls = getPrefixCls(namespace, customizePrefixCls);
 
-  const genCls = (suffix = "") => `${prefixCls}-${suffix}`;
+  const genCls = (suffix = "") =>
+    suffix ? `${prefixCls}-${suffix}` : prefixCls;
 
   const customCls = genCls("custom");
 
