@@ -38,6 +38,7 @@ export interface NetworkRule {
   /**
    * @default false
    */
+  ruleName?: string;
   baseMatchRule: NetworkBaseMatchRule;
   advanceMatchRules: NetworkAdvanceMatchRule[];
   modifyInfo: NetworkModifyInfo;

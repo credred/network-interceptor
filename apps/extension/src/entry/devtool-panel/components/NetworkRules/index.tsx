@@ -106,8 +106,8 @@ const NetworkRules: React.FC = () => {
     }
   }, [rules]);
 
-  const { control, reset, watch } = useForm<NetworkRule>();
-
+  const methods = useForm<NetworkRule>();
+  const { reset, watch } = methods;
   useEffect(() => {
     const subscription = watch((value, { type }) => {
       if (type !== "change" || !value) return;
@@ -182,103 +182,108 @@ const NetworkRules: React.FC = () => {
       {contextMenuNode}
       <section className="flex-1 min-w-0 mx-2">
         {activeRule ? (
-          <div className="flex gap-2 flex-col h-full">
-            <div className="flex gap-2">
+          <FormProvider {...methods}>
+            <div className="flex gap-2 flex-col h-full">
+              <div className="flex gap-2">
+                <Controller
+                  name="baseMatchRule.method"
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      className="w-[100px]"
+                      options={METHOD_OPTIONS.map((item) => ({
+                        ...item,
+                        label: <HttpBadge value={item.label} />,
+                      }))}
+                    />
+                  )}
+                />
+                <Controller
+                  name="baseMatchRule.path"
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      className="flex-1"
+                      placeholder={lang.rule.pathPlaceHolder}
+                    />
+                  )}
+                />
+              </div>
               <Controller
-                control={control}
-                name="baseMatchRule.method"
+                name="ruleName"
                 render={({ field }) => (
-                  <Select
-                    {...field}
-                    className="w-[100px]"
-                    options={METHOD_OPTIONS}
-                  />
+                  <Input {...field} placeholder={lang.rule.namePlaceHolder} />
                 )}
               />
               <Controller
-                control={control}
-                name="baseMatchRule.path"
+                name="modifyInfo.continueRequest"
                 render={({ field }) => (
-                  <Input
-                    {...field}
-                    className="flex-1"
-                    placeholder={lang.rule.pathPlaceHolder}
-                  />
+                  <Checkbox className="self-start" {...field}>
+                    Continue Request
+                  </Checkbox>
                 )}
               />
+              <Tabs
+                className="flex-1 min-h-0"
+                fullHeight={true}
+                items={[
+                  {
+                    label: "Response",
+                    key: "response",
+                    children: (
+                      <div className="flex flex-col gap-2 h-full">
+                        <Controller
+                          name="modifyInfo.response.status"
+                          render={({ field }) => (
+                            <Select {...field} className="w-[250px]" showSearch>
+                              {STATUS_CODE_OPTIONS.map((group) => (
+                                <Select.OptGroup
+                                  key={group.label}
+                                  label={group.label}
+                                >
+                                  {group.children.map((item) => (
+                                    <Select.Option
+                                      key={`${group.label}-${item.value}`}
+                                      value={item.value}
+                                    >
+                                      {item.label}
+                                    </Select.Option>
+                                  ))}
+                                </Select.OptGroup>
+                              ))}
+                            </Select>
+                          )}
+                        />
+                        <Controller
+                          name="modifyInfo.response.responseBody"
+                          render={({ field: { ref, ...field } }) => (
+                            <Editor
+                              {...field}
+                              flex
+                              theme="vs-dark"
+                              language="json"
+                            ></Editor>
+                          )}
+                        />
+                      </div>
+                    ),
+                  },
+                  {
+                    label: "Response Headers",
+                    key: "response headers",
+                  },
+                  {
+                    label: "Request",
+                    key: "request",
+                  },
+                  {
+                    label: "Request Headers",
+                    key: "request headers",
+                  },
+                ]}
+              ></Tabs>
             </div>
-
-            <Controller
-              control={control}
-              name="modifyInfo.continueRequest"
-              render={({ field }) => (
-                <Checkbox className="self-start" {...field}>
-                  Continue Request
-                </Checkbox>
-              )}
-            />
-            <Tabs
-              className="flex-1 min-h-0"
-              fullHeight={true}
-              items={[
-                {
-                  label: "Response",
-                  key: "response",
-                  children: (
-                    <div className="flex flex-col gap-2 h-full">
-                      <Controller
-                        control={control}
-                        name="modifyInfo.response.status"
-                        render={({ field }) => (
-                          <Select {...field} className="w-[250px]" showSearch>
-                            {STATUS_CODE_OPTIONS.map((group) => (
-                              <Select.OptGroup
-                                key={group.label}
-                                label={group.label}
-                              >
-                                {group.children.map((item) => (
-                                  <Select.Option
-                                    key={`${group.label}-${item.value}`}
-                                    value={item.value}
-                                  >
-                                    {item.label}
-                                  </Select.Option>
-                                ))}
-                              </Select.OptGroup>
-                            ))}
-                          </Select>
-                        )}
-                      />
-                      <Controller
-                        control={control}
-                        name="modifyInfo.response.responseBody"
-                        render={({ field: { ref, ...field } }) => (
-                          <Editor
-                            {...field}
-                            flex
-                            theme="vs-dark"
-                            language="json"
-                          ></Editor>
-                        )}
-                      />
-                    </div>
-                  ),
-                },
-                {
-                  label: "Response Headers",
-                  key: "response headers",
-                },
-                {
-                  label: "Request",
-                  key: "request",
-                },
-                {
-                  label: "Request Headers",
-                  key: "request headers",
-                },
-              ]}
-            ></Tabs>
-          </div>
+          </FormProvider>
         ) : (
           <Empty
             description={"No rule defined"}
