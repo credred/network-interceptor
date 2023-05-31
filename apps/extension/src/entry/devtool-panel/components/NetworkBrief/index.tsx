@@ -1,6 +1,7 @@
 import { FC } from "react";
-import { Table, TableColumnsType } from "ui";
 import classNames from "classnames";
+import TableVirtual from "ui/components/TableVirtual";
+import { ColumnType } from "ui/components/TableVirtual/interface";
 import { NetworkInfo } from "common/api-interceptor";
 import useStyles from "./styles";
 
@@ -11,7 +12,7 @@ interface NetworkBriefProps {
   setCurrentNetworkDetail: (detail: NetworkInfo | undefined) => void;
 }
 
-const column: TableColumnsType<NetworkInfo> = [
+const columns: ColumnType<NetworkInfo>[] = [
   {
     title: "",
     dataIndex: "ruleId",
@@ -60,7 +61,7 @@ const NetworkBrief: FC<NetworkBriefProps> = (props) => {
   return (
     <>
       {!isEmpty ? (
-        <Table<NetworkInfo>
+        <TableVirtual<NetworkInfo>
           rowKey="id"
           className={classNames("flex-1", classes)}
           dataSource={dataSource}
@@ -86,7 +87,7 @@ const NetworkBrief: FC<NetworkBriefProps> = (props) => {
           size="small"
           pagination={false}
           columns={column}
-        ></Table>
+        ></TableVirtual>
       ) : (
         <div className="h-full flex justify-center items-center flex-col flex-1">
           <div>Recording network activity...</div>
