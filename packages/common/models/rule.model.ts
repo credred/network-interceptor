@@ -1,4 +1,5 @@
 export enum METHOD {
+  ALL = "ALL",
   GET = "GET",
   POST = "POST",
   PUT = "PUT",

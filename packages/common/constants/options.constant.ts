@@ -1,8 +1,6 @@
 import { last } from "lodash";
 import { METHOD } from "../models/rule.model";
 
-export const RULE_All_METHOD = "ALL";
-
 interface Option<ValueType = any> {
   label: string;
   value: ValueType;
@@ -163,8 +161,8 @@ export const STATUS_CODE_OPTIONS = RAW_STATUS_CODE_OPTIONS.reduce<Group[]>(
 
 export const METHOD_OPTIONS = [
   {
-    value: RULE_All_METHOD,
-    label: RULE_All_METHOD,
+    value: METHOD.ALL,
+    label: METHOD.ALL,
   },
   {
     value: METHOD.GET,

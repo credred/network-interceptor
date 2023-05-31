@@ -17,10 +17,12 @@ import {
   Select,
   Tabs,
   useContextMenu,
+  useToken,
 } from "ui";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, FormProvider } from "react-hook-form";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { request } from "../utils/request";
+import HttpBadge from "./HttpBadge";
 
 interface LinkRule {
   value: NetworkRule;
@@ -80,6 +82,7 @@ const NetworkRules: React.FC = () => {
   const [rules, setRules] = useState<NetworkRule[]>([]);
   const linkRules = useMemo(() => generateLinkRules(rules), [rules]);
   const [activeRule, setActiveRule] = useState<NetworkRule>();
+  const { token } = useToken();
 
   useEffect(() => {
     const subscription = request.rules$.subscribe((rules) => {
@@ -159,8 +162,20 @@ const NetworkRules: React.FC = () => {
             key={item.id}
             onContextMenu={(event) => showContextMenu(item, { event })}
           >
-            <div className="truncate">{item.baseMatchRule.path}</div>
-            <div>{item.baseMatchRule.method}</div>
+            <div className="flex-1 w-full">
+              <div className="flex justify-between">
+                <div className="truncate">{item.baseMatchRule.path}</div>
+                <HttpBadge value={item.baseMatchRule.method} />
+              </div>
+              {item.ruleName && (
+                <div
+                  className="truncate text-xs"
+                  style={{ color: token.colorTextSecondary }}
+                >
+                  {item.ruleName}
+                </div>
+              )}
+            </div>
           </List.Item>
         )}
       ></List>
