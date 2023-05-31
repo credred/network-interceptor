@@ -14,14 +14,6 @@ interface NetworkBriefProps {
 
 const columns: ColumnType<NetworkInfo>[] = [
   {
-    title: "",
-    dataIndex: "ruleId",
-    key: "ruleId",
-    width: 10,
-    render: (value) => (value ? "*" : ""),
-    className: "!p-0 text-center",
-  },
-  {
     title: "Url",
     dataIndex: "url",
     key: "url",
@@ -53,10 +45,38 @@ const columns: ColumnType<NetworkInfo>[] = [
   },
 ];
 
+const useFirstColumnMark = <T, R extends ColumnType<T>[] = ColumnType<T>[]>(
+  columns: R,
+  shouldMark: (record: T) => boolean
+): R => {
+  return columns.map((column, index) => {
+    if (index === 0) {
+      return {
+        ...column,
+        onCell(record) {
+          const cellProps = column.onCell?.(record);
+          return {
+            ...cellProps,
+            className: classNames(
+              cellProps?.className,
+              shouldMark(record) && "networkBrief-table-cell-marker"
+            ),
+          };
+        },
+      };
+    }
+    return column;
+  }) as R;
+};
+
 const NetworkBrief: FC<NetworkBriefProps> = (props) => {
   const classes = useStyles();
   const { dataSource, isEmpty, currentNetworkDetail, setCurrentNetworkDetail } =
     props;
+
+  const mergedColumns = useFirstColumnMark(columns, (record: NetworkInfo) => {
+    return !!record.ruleId;
+  });
 
   return (
     <>
@@ -86,7 +106,7 @@ const NetworkBrief: FC<NetworkBriefProps> = (props) => {
           bordered
           size="small"
           pagination={false}
-          columns={column}
+          columns={mergedColumns}
         ></TableVirtual>
       ) : (
         <div className="h-full flex justify-center items-center flex-col flex-1">
