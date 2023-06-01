@@ -6,6 +6,8 @@ import Button from "./components/Button";
 export { default as Checkbox } from "./components/Checkbox";
 export type { CheckboxProps } from "./components/Checkbox";
 export { default as Collapse } from "./components/Collapse";
+export { default as InputNumber } from "./components/InputNumber";
+export type { InputNumberProps } from "./components/InputNumber";
 export { default as Splitter } from "./components/Splitter";
 export { default as TableVirtual } from "./components/TableVirtual";
 export * from "./components/ContextMenu";
