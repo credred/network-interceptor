@@ -17,6 +17,7 @@ const TableVirtual = <RecordType extends AnyObject>(
 ) => {
   const { prefixCls, genCls } = usePrefixCls("table-virtual");
   const {
+    dataSource,
     columns: propColumns,
     scroll,
     rowSelection,
@@ -25,6 +26,7 @@ const TableVirtual = <RecordType extends AnyObject>(
     onRow: propOnRow,
     rowHeight = 29,
     pagination = false,
+    stickToBottom = true,
   } = props;
   const [tableWidth, setTableWidth] = useState(0);
   const [tableHeight, setTableHeight] = useState(
@@ -86,12 +88,14 @@ const TableVirtual = <RecordType extends AnyObject>(
   };
 
   const renderBody = useVirtualBody({
+    dataSource,
     genCls,
     columns,
     onRow,
     tableWidth,
     tableHeight,
     rowHeight,
+    stickToBottom,
   });
 
   const renderNode: RenderNode = (classes) => (

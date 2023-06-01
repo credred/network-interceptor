@@ -6,14 +6,17 @@ import { TableVirtualProps } from "../interface";
 import Cell, { CellData } from "../Cell";
 import { HoverStateContextProvider } from "../Cell/hoverStateContext";
 import { GetComponentProps } from "rc-table/es/interface";
+import useStickElementToBottom from "../../_utils/useStickElementToBottom";
 
 export interface useVirtualBodyOptions<RecordType> {
   genCls: (suffix?: string) => string;
   columns: TableVirtualProps<RecordType>["columns"];
+  dataSource?: readonly RecordType[];
   onRow: GetComponentProps<RecordType>;
   tableWidth: number;
   tableHeight: number;
   rowHeight: number;
+  stickToBottom?: boolean;
 }
 
 const ChangeHOC: React.FC<{
@@ -35,6 +38,7 @@ const ChangeHOC: React.FC<{
 const useVirtualBody = <RecordType extends AnyObject>({
   genCls,
   columns,
+  dataSource,
   onRow,
   tableWidth,
   tableHeight,
@@ -77,7 +81,9 @@ const useVirtualBody = <RecordType extends AnyObject>({
   const tableTotalHeight = useRef(0);
   const prevHasScrollbarRef = useRef(false);
 
-  useLayoutEffect(() => resetVirtualGrid, [tableWidth]);
+  const onUpdateScrollHeight = useStickElementToBottom(gridOutRef);
+  useLayoutEffect(() => resetVirtualGrid(), [tableWidth]);
+  useLayoutEffect(() => onUpdateScrollHeight(), [dataSource]);
   useLayoutEffect(() => {
     const currentHasScrollbar = tableTotalHeight.current > tableHeight;
     if (currentHasScrollbar !== prevHasScrollbarRef.current) {

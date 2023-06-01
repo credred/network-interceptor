@@ -14,4 +14,5 @@ export type TableVirtualProps<RecordType> = Omit<
 > & {
   columns: ColumnType<RecordType>[];
   rowHeight?: number;
+  stickToBottom?: boolean;
 };
