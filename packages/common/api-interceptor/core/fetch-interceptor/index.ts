@@ -2,7 +2,7 @@ import {
   NetworkModifyInfo,
   shouldContinueRequest,
 } from "../../../network-rule";
-import { assertNonNil } from "../../../utils";
+import { assertNonNil, delay } from "../../../utils";
 import { InterceptorConfig, ResponseInfo } from "../../types";
 import {
   applyModifyInfoToRequestInfo,
@@ -32,14 +32,22 @@ const generateRequestByModifyInfo = (
   return oldRequest;
 };
 
-const generateFetchResponseByModifyInfo = (
+const generateFetchResponseByModifyInfo = async (
   responseModifyInfo: NetworkModifyInfo["response"],
   oldResponse?: Response
 ) => {
   let response = oldResponse;
   if (responseModifyInfo) {
-    const { status, statusText, responseBody, responseHeaders } =
-      responseModifyInfo;
+    const {
+      status,
+      statusText,
+      delay: delayTime,
+      responseBody,
+      responseHeaders,
+    } = responseModifyInfo;
+    if (delayTime) {
+      await delay(delayTime * 1000);
+    }
     response = new Response(responseBody ?? oldResponse?.body, {
       headers: responseHeaders || oldResponse?.headers,
       status,
@@ -108,13 +116,13 @@ export const createInterceptedFetch = (
         requestInfo
       );
     }
-    config.responseReceived(responseInfo);
     // one of response or networkModifyInfo must not be undefined
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    response = generateFetchResponseByModifyInfo(
+    response = (await generateFetchResponseByModifyInfo(
       networkModifyInfo?.response,
       response
-    )!;
+    ))!;
+    config.responseReceived(responseInfo);
 
     return response;
   }

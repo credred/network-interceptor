@@ -4,6 +4,7 @@ import {
   NetworkModifyInfo,
   shouldContinueRequest,
 } from "../../../network-rule";
+import { delay } from '../../../utils';
 import { InterceptorConfig, RequestInfo, ResponseInfo } from "../../types";
 import {
   applyModifyInfoToRequestInfo,
@@ -97,14 +98,14 @@ export const createInterceptedXhr = (
         this.dispatchEvent(cloneEvent(event));
       this.originXhr.onloadstart = (event) =>
         this.dispatchEvent(cloneEvent(event));
-      this.originXhr.onreadystatechange = () => {
+      this.originXhr.onreadystatechange = async () => {
         if (this.originXhr.readyState === 4) {
           // we use readystatechange event instead of onload event and onerror event, because the former is triggered first
           if (this.originXhr.status === 0) {
             // xhr failed to request
             if (this.#networkModifyInfo?.response) {
               // if modifyInfo.response exist using it as response
-              this.#changeXhrResponseByModifyInfo();
+              await this.#changeXhrResponseByModifyInfo();
               const responseInfo = this.#generateResponseInfoByXhr();
               config.responseReceived(responseInfo);
             } else {
@@ -114,7 +115,7 @@ export const createInterceptedXhr = (
               config.responseReceived(responseInfo);
             }
           } else {
-            this.#changeXhrResponseByModifyInfo(this.originXhr);
+            await this.#changeXhrResponseByModifyInfo(this.originXhr);
             const responseInfo = this.#generateResponseInfoByXhr();
             config.responseReceived(responseInfo);
           }
@@ -191,7 +192,7 @@ export const createInterceptedXhr = (
           await postTask();
           this.#readyState = 3;
           await postTask();
-          this.#changeXhrResponseByModifyInfo();
+          await this.#changeXhrResponseByModifyInfo();
           const responseInfo = this.#generateResponseInfoByXhr();
           config.responseReceived(responseInfo);
           this.#readyState = 4;
@@ -290,8 +291,11 @@ export const createInterceptedXhr = (
       });
       this.originXhr.send(body);
     }
-    #changeXhrResponseByModifyInfo(xhr?: XMLHttpRequest) {
+    async #changeXhrResponseByModifyInfo(xhr?: XMLHttpRequest) {
       const modifyInfo = this.#networkModifyInfo?.response;
+      if (modifyInfo?.delay) {
+        await delay(modifyInfo.delay * 1000);
+      }
       if (modifyInfo?.responseBody) {
         this.#response = this.#convertResponseBody(modifyInfo?.responseBody);
       } else {

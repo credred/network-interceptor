@@ -12,3 +12,11 @@ export const assertNonNil: <T>(value: T) => asserts value is NonNullable<T> = (
   if (typeof value === "undefined" || value === null)
     throw new Error(`value is Nil`);
 };
+
+export const delay = (timeout?: number) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(undefined)
+    }, timeout);
+  })
+}

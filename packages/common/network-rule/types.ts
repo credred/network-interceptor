@@ -28,6 +28,7 @@ export interface NetworkModifyInfo {
   response?: {
     status?: number;
     statusText?: string;
+    delay?: number;
     responseHeaders?: Record<string, string>;
     responseBody?: string;
   };

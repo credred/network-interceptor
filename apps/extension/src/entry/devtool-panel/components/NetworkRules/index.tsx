@@ -13,14 +13,18 @@ import {
   Editor,
   Empty,
   Input,
+  InputNumber,
   List,
   Select,
   Tabs,
   useContextMenu,
   useToken,
 } from "ui";
-import { useForm, Controller, FormProvider } from "react-hook-form";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  ClockCircleOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { request } from "../utils/request";
 import HttpBadge from "./HttpBadge";
 
@@ -232,10 +236,15 @@ const NetworkRules: React.FC = () => {
                     key: "response",
                     children: (
                       <div className="flex flex-col gap-2 h-full">
+                        <div className="flex gap-2">
                         <Controller
                           name="modifyInfo.response.status"
                           render={({ field }) => (
-                            <Select {...field} className="w-[250px]" showSearch>
+                              <Select
+                                {...field}
+                                className="w-[250px]"
+                                showSearch
+                              >
                               {STATUS_CODE_OPTIONS.map((group) => (
                                 <Select.OptGroup
                                   key={group.label}
@@ -254,6 +263,21 @@ const NetworkRules: React.FC = () => {
                             </Select>
                           )}
                         />
+                        <Controller
+                            name="modifyInfo.response.delay"
+                            render={({ field }) => (
+                              <InputNumber
+                                className="w-[100px]"
+                                prefix={<ClockCircleOutlined />}
+                                controls={false}
+                                min={0}
+                                precision={3}
+                                {...field}
+                                placeholder={lang.rule.delayPlaceHolder}
+                              />
+                            )}
+                          />
+                        </div>
                         <Controller
                           name="modifyInfo.response.responseBody"
                           render={({ field: { ref, ...field } }) => (
