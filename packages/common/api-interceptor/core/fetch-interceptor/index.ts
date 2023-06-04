@@ -69,14 +69,15 @@ export const createInterceptedFetch = (
     const request = new Request(input, init);
 
     const originRequestInfo = await generateRequestInfoByFetchRequest(request);
-    const rule = await config.matchRule(originRequestInfo);
+    const rule = await config.matchRule(originRequestInfo.serialize());
     const networkModifyInfo = rule?.modifyInfo;
     const requestInfo = applyModifyInfoToRequestInfo(
       originRequestInfo,
       networkModifyInfo?.request,
       rule?.id
     );
-    config.requestWillBeSent(requestInfo);
+    const serializedRequestInfo = requestInfo.serialize();
+    config.requestWillBeSent(serializedRequestInfo);
 
     let response: Response | undefined = undefined;
     let responseInfo: ResponseInfo;
@@ -90,7 +91,7 @@ export const createInterceptedFetch = (
         response = await originFetch(newRequest);
         const originResponseInfo = await generateResponseInfoByFetchResponse(
           response,
-          requestInfo
+          serializedRequestInfo
         );
         responseInfo = applyModifyInfoToResponseInfo(
           originResponseInfo,
@@ -101,7 +102,7 @@ export const createInterceptedFetch = (
           // make the response successful
           responseInfo = generateResponseInfoByModifyInfo(
             networkModifyInfo.response,
-            requestInfo
+            serializedRequestInfo
           );
         } else {
           config.responseReceived(generateErrorResponseInfo(requestInfo));
@@ -113,7 +114,7 @@ export const createInterceptedFetch = (
       assertNonNil(networkModifyInfo);
       responseInfo = generateResponseInfoByModifyInfo(
         networkModifyInfo.response,
-        requestInfo
+        serializedRequestInfo
       );
     }
     // one of response or networkModifyInfo must not be undefined

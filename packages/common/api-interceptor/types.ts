@@ -1,4 +1,5 @@
 import { NetworkRule } from "../network-rule";
+import { Header } from "../typings";
 
 export interface RequestInfo {
   id: string;
@@ -8,9 +9,9 @@ export interface RequestInfo {
   stage: "request";
   url: string;
   method: string;
-  requestHeaders?: Record<string, string>;
+  requestHeaders?: Header[];
   requestBody?: string;
-  originRequestHeaders?: Record<string, string>;
+  originRequestHeaders?: Header[];
   originRequestBody?: string;
 }
 
@@ -19,10 +20,10 @@ export interface ResponseInfo extends Omit<RequestInfo, "stage"> {
   stage: "response";
   status: number;
   statusText: string;
-  responseHeaders?: Record<string, string>;
+  responseHeaders?: Header[];
   responseBody?: string;
   responseBodyParsable: boolean;
-  originResponseHeaders?: Record<string, string>;
+  originResponseHeaders?: Header[];
   originResponseBody?: string;
 }
 

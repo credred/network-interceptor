@@ -1,11 +1,12 @@
-import _, { forEach, toString } from "lodash";
+import _, { toString } from "lodash";
 import uid from "tiny-uid";
 import {
   NetworkModifyInfo,
   shouldContinueRequest,
 } from "../../../network-rule";
-import { delay } from '../../../utils';
-import { InterceptorConfig, RequestInfo, ResponseInfo } from "../../types";
+import { delay } from "../../../utils";
+import { InterceptorConfig, ResponseInfo } from "../../types";
+import { AdvancedRequestInfo } from "../../utils/RequestInfo";
 import {
   applyModifyInfoToRequestInfo,
   generateErrorResponseInfo,
@@ -124,7 +125,7 @@ export const createInterceptedXhr = (
       };
     }
 
-    #requestInfo: RequestInfo | undefined = undefined;
+    #requestInfo: AdvancedRequestInfo | undefined = undefined;
     #networkModifyInfo?: NetworkModifyInfo;
 
     open(method: string, url: string | URL): void;
@@ -147,14 +148,14 @@ export const createInterceptedXhr = (
       } else {
         this.originXhr.open(method, url);
       }
-      this.#requestInfo = {
+      this.#requestInfo = new AdvancedRequestInfo({
         id: uid(),
         url: toString(new URL(url, location.href).toString()),
         stage: "request",
         type: "xhr",
         method: toString(method).toUpperCase(),
-        requestHeaders: {},
-      };
+        requestHeaders: undefined,
+      });
       this.#resetXhr();
       this.#readyState = 1;
     }
@@ -163,23 +164,23 @@ export const createInterceptedXhr = (
       this.#verifyState();
       if (!this.#requestInfo) return;
       if (!this.#requestInfo.requestHeaders) {
-        this.#requestInfo.requestHeaders = {};
+        this.#requestInfo.requestHeaders = new Headers();
       }
-      this.#requestInfo.requestHeaders[name] = value;
+      this.#requestInfo.requestHeaders.set(name, value);
     }
 
     send(body?: Document | XMLHttpRequestBodyInit | null | undefined): void {
       const asyncSend = async () => {
         if (!this.#requestInfo) return;
         this.#requestInfo.requestBody = await this.#convertRequestBody(body);
-        const rule = await config.matchRule(this.#requestInfo);
+        const rule = await config.matchRule(this.#requestInfo.serialize());
         this.#networkModifyInfo = rule?.modifyInfo;
         this.#requestInfo = applyModifyInfoToRequestInfo(
           this.#requestInfo,
           rule?.modifyInfo?.request,
           rule?.id
         );
-        config.requestWillBeSent(this.#requestInfo);
+        config.requestWillBeSent(this.#requestInfo.serialize());
 
         if (shouldContinueRequest(this.#networkModifyInfo)) {
           // convertRequestBody function will break body of type blob.
@@ -259,19 +260,19 @@ export const createInterceptedXhr = (
     }
 
     #parseResponseHeaders(rawHeaders?: string) {
-      if (!rawHeaders) return {};
+      if (!rawHeaders) return undefined;
       return rawHeaders
         .trim()
         .split("\r\n")
-        .reduce<Record<string, string>>((headerMap, line) => {
+        .reduce<Headers>((headers, line) => {
           const parts = line.split(": ");
           const header = parts.shift();
           const value = parts.join(": ");
           if (header) {
-            headerMap[header] = value;
+            headers.set(header, value);
           }
-          return headerMap;
-        }, {});
+          return headers;
+        }, new Headers());
     }
     //#endregion
 
@@ -286,9 +287,10 @@ export const createInterceptedXhr = (
     }
     #realSend(body: Document | XMLHttpRequestBodyInit | null | undefined) {
       if (!this.#requestInfo) return;
-      forEach(this.#requestInfo.requestHeaders, (value, key) => {
+      for (const [key, value] of this.#requestInfo.requestHeaders?.entries() ||
+        []) {
         this.originXhr.setRequestHeader(key, value);
-      });
+      }
       this.originXhr.send(body);
     }
     async #changeXhrResponseByModifyInfo(xhr?: XMLHttpRequest) {
@@ -315,16 +317,18 @@ export const createInterceptedXhr = (
       this.#status = modifyInfo?.status || xhr?.status || 200;
       this.#statusText = modifyInfo?.statusText || xhr?.statusText || "";
       this.#responseHeaders =
-        modifyInfo?.responseHeaders ||
+        new Headers(modifyInfo?.responseHeaders) ||
         this.#parseResponseHeaders(xhr?.getAllResponseHeaders());
     }
     #generateResponseInfoByXhr(): ResponseInfo {
       return {
-        ...this.#requestInfo!,
+        ...this.#requestInfo!.serialize(),
         stage: "response",
         status: this.status,
         statusText: this.statusText,
-        responseHeaders: this.#responseHeaders,
+        responseHeaders: this.#responseHeaders
+          ? Array.from(this.#responseHeaders?.entries())
+          : undefined,
         responseBody: toString(this.response),
         responseBodyParsable: true,
       };
@@ -332,11 +336,11 @@ export const createInterceptedXhr = (
     //#endregion
 
     //#region modifiable method
-    #responseHeaders: Record<string, string> | undefined = undefined;
+    #responseHeaders: Headers | undefined = undefined;
     getAllResponseHeaders(): string {
       if (this.#responseHeaders) {
         return (
-          Object.entries(this.#responseHeaders)
+          Array.from(this.#responseHeaders.entries())
             .map(([key, value]) => `${key}: ${value}`)
             .join("\r\n") + "\r\n"
         );
@@ -347,7 +351,7 @@ export const createInterceptedXhr = (
 
     getResponseHeader(name: string): string | null {
       if (this.#responseHeaders) {
-        return this.#responseHeaders[name] || null;
+        return this.#responseHeaders.get(name) || null;
       } else {
         return this.originXhr.getResponseHeader(name);
       }

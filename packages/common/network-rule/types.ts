@@ -1,3 +1,5 @@
+import { Header } from "../typings";
+
 export interface NetworkAdvanceMatchRule {
   type:
     | "requestBody"
@@ -23,13 +25,13 @@ export interface NetworkModifyInfo {
   request?: {
     redirectUrl?: string;
     requestBody?: string;
-    requestHeaders?: Record<string, string>;
+    requestHeaders?: Header[];
   };
   response?: {
     status?: number;
     statusText?: string;
     delay?: number;
-    responseHeaders?: Record<string, string>;
+    responseHeaders?: Header[];
     responseBody?: string;
   };
 }

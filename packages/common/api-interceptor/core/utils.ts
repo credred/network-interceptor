@@ -1,6 +1,7 @@
 import { upperFirst } from "lodash";
 import { NetworkModifyInfo } from "../../network-rule";
 import { RequestInfo, ResponseInfo } from "../types";
+import { AdvancedRequestInfo } from "../utils/RequestInfo";
 
 const generateOriginProp = <
   T extends string,
@@ -24,19 +25,18 @@ const generateOriginProp = <
 };
 
 export const applyModifyInfoToRequestInfo = (
-  requestInfo: RequestInfo,
+  requestInfo: AdvancedRequestInfo,
   modifyInfo?: NetworkModifyInfo["request"],
   ruleId?: string
-): RequestInfo => {
+): AdvancedRequestInfo => {
   if (ruleId) {
-    requestInfo = { ...requestInfo, ruleId };
+    requestInfo = requestInfo.copy({ ruleId });
   }
   if (modifyInfo) {
-    return {
-      ...requestInfo,
+    return requestInfo.copy({
       ...generateOriginProp(requestInfo, modifyInfo, "requestHeaders"),
       ...generateOriginProp(requestInfo, modifyInfo, "requestBody"),
-    };
+    });
   }
 
   return requestInfo;
@@ -58,10 +58,14 @@ export const applyModifyInfoToResponseInfo = (
 };
 
 export const generateErrorResponseInfo = (
-  requestInfo: RequestInfo
+  requestInfo: AdvancedRequestInfo | RequestInfo
 ): ResponseInfo => {
+  const serializedRequestInfo =
+    requestInfo instanceof AdvancedRequestInfo
+      ? requestInfo.serialize()
+      : requestInfo;
   return {
-    ...requestInfo,
+    ...serializedRequestInfo,
     stage: "response",
     status: 0,
     statusText: "(failed)",

@@ -1,24 +1,20 @@
-import { isNil, isPlainObject } from "lodash";
+import { isNil } from "lodash";
 import uid from "tiny-uid";
 import { NetworkModifyInfo } from "../../../network-rule";
+import { Header } from "../../../typings";
 import { RequestInfo, ResponseInfo } from "../../types";
+import { AdvancedRequestInfo } from "../../utils/RequestInfo";
 
 const transformHeaders = (headers: HeadersInit) => {
-  let headerObj: Record<string, string> | undefined;
-  if (!headers) {
-    headerObj = undefined;
-  } else if (isPlainObject(headers)) {
-    headerObj = headers as Record<string, string>;
-  } else {
+  const result: Header[] = [];
+  if (headers) {
     const internalHeaders = new Headers(headers);
-    const internalHeaderObj: Record<string, string> = {};
     internalHeaders.forEach((value, key) => {
-      internalHeaderObj[key] = value;
+      result.push([key, value]);
     });
-    headerObj = internalHeaderObj;
   }
 
-  return headerObj;
+  return result;
 };
 
 const transformRequestBody = (request: Request) => {
@@ -52,8 +48,8 @@ const transformResponseBody = (oldResponse: Response) => {
 
 export const generateRequestInfoByFetchRequest = async (
   request: Request
-): Promise<RequestInfo> => {
-  return {
+): Promise<AdvancedRequestInfo> => {
+  return new AdvancedRequestInfo({
     id: uid(),
     type: "fetch",
     stage: "request",
@@ -61,7 +57,7 @@ export const generateRequestInfoByFetchRequest = async (
     url: request.url,
     requestHeaders: transformHeaders(request.headers),
     requestBody: await transformRequestBody(request),
-  };
+  });
 };
 
 export const generateResponseInfoByFetchResponse = async (
