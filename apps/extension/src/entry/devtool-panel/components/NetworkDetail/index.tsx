@@ -6,6 +6,7 @@ import { initRuleByNetworkInfo, NetworkRule } from "common/network-rule";
 import { usePrevious, useMemoizedFn } from "ahooks";
 import debugFn from "debug";
 import { request } from "../utils/request";
+import { Header } from "common/typings";
 const debug = debugFn("NetworkDetail");
 debugFn.enable("*");
 
@@ -20,19 +21,20 @@ interface HeadersListProps {
   }[];
 }
 
-const objToLabelValue = (obj: Record<string, string>) => {
-  return Array.from(Object.entries(obj)).reduce<
-    { label: string; value: string }[]
-  >((result, [key, value]) => {
-    result.push({ label: key, value });
-    return result;
-  }, []);
+const headerTupleToLabelValue = (headerTuple: Header[]) => {
+  return headerTuple.reduce<{ label: string; value: string }[]>(
+    (result, [key, value]) => {
+      result.push({ label: key, value });
+      return result;
+    },
+    []
+  );
 };
 
-const detectLang = (headers?: Record<string, string>) => {
+const detectLang = (headers?: Header[]) => {
   if (!headers) return undefined;
-
-  const contentType = headers["content-type"];
+  const header = new Headers(headers);
+  const contentType = header.get("content-type");
 
   if (contentType?.includes("json")) {
     return "json";
@@ -59,7 +61,7 @@ const HeadersList: FC<HeadersListProps> = (props) => {
   );
 };
 
-const Headers: FC<NetWorkDetailProps> = (props) => {
+const HeadersPanel: FC<NetWorkDetailProps> = (props) => {
   const { detail } = props;
   if (!detail) return null;
   return (
@@ -93,12 +95,14 @@ const Headers: FC<NetWorkDetailProps> = (props) => {
       </Collapse.Panel>
       {detail.requestHeaders && (
         <Collapse.Panel header="Request Headers" key="2">
-          <HeadersList items={objToLabelValue(detail.requestHeaders)} />
+          <HeadersList items={headerTupleToLabelValue(detail.requestHeaders)} />
         </Collapse.Panel>
       )}
       {detail.responseHeaders && (
         <Collapse.Panel header="Response Headers" key="3">
-          <HeadersList items={objToLabelValue(detail.responseHeaders)} />
+          <HeadersList
+            items={headerTupleToLabelValue(detail.responseHeaders)}
+          />
         </Collapse.Panel>
       )}
     </Collapse>
@@ -172,7 +176,7 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
             {
               label: "Headers",
               key: "headers",
-              children: <Headers detail={networkInfo} />,
+              children: <HeadersPanel detail={networkInfo} />,
             },
             {
               label: "Response",
