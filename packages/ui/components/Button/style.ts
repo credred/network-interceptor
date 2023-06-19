@@ -10,6 +10,7 @@ const useStyle = genCustomComponentStyleHook("ButtonCustom", (token) => {
       [customCls]: {
         display: "inline-flex",
         alignItems: "center",
+        justifyContent: "center",
         ...genFocusStyleWithSelector(token),
         [`&${componentCls}-text`]: {
           color: token.colorTextSecondary,
