@@ -146,9 +146,12 @@ const Editor: FC<EditorProps> = (props) => {
     >
       <div className="min-h-0 flex-1">
         <MonacoEditor
+          {...editorProps}
           options={{
             formatOnPaste: true,
             formatOnType: true,
+            fixedOverflowWidgets: true,
+            ...editorProps.options,
           }}
           {...editorProps}
           onMount={onEditorMount}
