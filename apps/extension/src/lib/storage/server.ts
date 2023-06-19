@@ -15,19 +15,19 @@ export const createStorageServer = (
   onMessage: OnMessage,
   onOpenStreamChannel: OnOpenStreamChannel
 ) => {
-  onMessage(StorageMessage.createRule, ({ data }) => {
-    return createRule(data);
+  onMessage(StorageMessage.createRule, ({ data: { data, operator } }) => {
+    return createRule(data, operator);
   });
 
-  onMessage(StorageMessage.updateRule, ({ data }) => {
-    return updateRule(data);
+  onMessage(StorageMessage.updateRule, ({ data: { data, operator } }) => {
+    return updateRule(data, operator);
   });
 
-  onMessage(StorageMessage.deleteRule, ({ data }) => {
-    return deleteRule(data);
+  onMessage(StorageMessage.deleteRule, ({ data: { data, operator } }) => {
+    return deleteRule(data, operator);
   });
 
-  onMessage(StorageMessage.getRule, ({ data }) => {
+  onMessage(StorageMessage.getRule, ({ data: { data } }) => {
     return getRule(data);
   });
 
@@ -52,8 +52,8 @@ export const createStorageServer = (
         return true;
       },
     });
-    const subscriber = rules$.subscribe((rule) => {
-      stream.send(rule as unknown as JsonValue);
+    const subscriber = rules$.subscribe(({ rules, operator }) => {
+      stream.send({ operator, rules } as unknown as JsonValue);
     });
 
     stream.onClose(() => {

@@ -1,10 +1,13 @@
 import { openDB, DBSchema } from "idb";
 import debugFn from "debug";
 import { NetworkRule } from "common/network-rule";
-import { concat, from, shareReplay, Subject, switchMap, tap } from "rxjs";
+import { concat, from, map, shareReplay, Subject, switchMap, tap } from "rxjs";
 
 const debug = debugFn("storage");
 debugFn.enable("*");
+
+/** Prevent rule change event notification operators */
+type Operator = string;
 
 interface InterceptorDB extends DBSchema {
   rule: {
@@ -18,16 +21,19 @@ interface InterceptorDB extends DBSchema {
 
 interface BaseChangeType<T> {
   type: "created" | "updated";
+  operator?: Operator;
   data: T;
 }
 
 interface DeleteChangeType<T> {
   type: "deleted";
+  operator?: Operator;
   data?: T;
   id: string;
 }
 interface ClearChangeType {
   type: "clear";
+  operator?: Operator;
 }
 
 type ChangeType<T> = BaseChangeType<T> | DeleteChangeType<T> | ClearChangeType;
@@ -54,21 +60,21 @@ const dbRequest = openDB<InterceptorDB>("interceptor", 1, {
   },
 });
 
-export const updateRule = async (rule: NetworkRule) => {
+export const updateRule = async (rule: NetworkRule, operator?: Operator) => {
   const db = await dbRequest;
-  const store = await db.transaction("rule", "readwrite").objectStore("rule");
+  const store = db.transaction("rule", "readwrite").objectStore("rule");
   const key = await store.index("id").getKey(rule.id);
   await store.put(rule, key);
-  internalRuleChange$.next({ type: "updated", data: rule });
+  internalRuleChange$.next({ type: "updated", data: rule, operator });
 };
 
-export const createRule = async (rule: NetworkRule) => {
+export const createRule = async (rule: NetworkRule, operator?: Operator) => {
   const db = await dbRequest;
   await db.transaction("rule", "readwrite").objectStore("rule").add(rule);
-  internalRuleChange$.next({ type: "created", data: rule });
+  internalRuleChange$.next({ type: "created", data: rule, operator });
 };
 
-export const deleteRule = async (ruleId: string) => {
+export const deleteRule = async (ruleId: string, operator?: Operator) => {
   const db = await dbRequest;
   const tx = db.transaction("rule", "readwrite");
   const store = tx.objectStore("rule");
@@ -81,14 +87,19 @@ export const deleteRule = async (ruleId: string) => {
   await store.delete(key);
   const rule = await index.get(ruleId);
   await tx.done;
-  internalRuleChange$.next({ type: "deleted", data: rule, id: ruleId });
+  internalRuleChange$.next({
+    type: "deleted",
+    data: rule,
+    id: ruleId,
+    operator,
+  });
 };
 
-export const clearRules = async () => {
+export const clearRules = async (operator?: Operator) => {
   const db = await dbRequest;
   const tx = db.transaction("rule", "readwrite").objectStore("rule");
   await tx.clear();
-  internalRuleChange$.next({ type: "clear" });
+  internalRuleChange$.next({ type: "clear", operator });
 };
 
 export const getRule = async (ruleId: string) => {
@@ -113,8 +124,12 @@ export const ruleChange$ = from(internalRuleChange$);
 export const rules$ = (() => {
   const createRulesOb = () => from(getAllRules());
   return concat(
-    createRulesOb(),
-    ruleChange$.pipe(switchMap(() => createRulesOb()))
+    createRulesOb().pipe(map((rules) => ({ rules, operator: undefined }))),
+    ruleChange$.pipe(
+      switchMap(({ operator }) =>
+        createRulesOb().pipe(map((rules) => ({ rules, operator })))
+      )
+    )
   ).pipe(
     shareReplay(1),
     tap((rule) => console.log("rule change", rule))

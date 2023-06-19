@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, memo, useEffect, useMemo, useRef, useState } from "react";
 import { initRule, NetworkRule } from "common/network-rule";
 import {
   METHOD_OPTIONS,
@@ -16,17 +16,22 @@ import {
   InputNumber,
   List,
   Select,
+  Space,
   Tabs,
   useContextMenu,
   useToken,
 } from "ui";
+import { useForm, Controller, FormProvider, useWatch } from "react-hook-form";
 import {
   ClockCircleOutlined,
   DeleteOutlined,
+  MinusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import { request } from "../utils/request";
+import { createRequest } from "../utils/request";
 import HttpBadge from "./HttpBadge";
+import ArrayField from "./components/ArrayField";
+import uid from "tiny-uid";
 
 interface LinkRule {
   value: NetworkRule;
@@ -82,19 +87,50 @@ const useRuleContextMenu = (handleDeleteRule: (ruleId?: string) => void) => {
   return { showContextMenu, contextMenuNode };
 };
 
+const useStateWithUpdateRef = <S,>(
+  initialState: S | (() => S)
+): [
+  React.MutableRefObject<boolean>,
+  S,
+  React.Dispatch<React.SetStateAction<S>>,
+  React.Dispatch<React.SetStateAction<S>>
+] => {
+  const shouldUpdateRef = useRef(false);
+  const [state, setState] = useState(initialState);
+
+  const setStateWithUpdate: React.Dispatch<React.SetStateAction<S>> = (s) => {
+    shouldUpdateRef.current = true;
+    setState(s);
+  };
+
+  const setStateWithoutUpdate: React.Dispatch<React.SetStateAction<S>> = (
+    s
+  ) => {
+    shouldUpdateRef.current = false;
+    setState(s);
+  };
+
+  return [shouldUpdateRef, state, setStateWithUpdate, setStateWithoutUpdate];
+};
+
+const request = createRequest(uid());
 const NetworkRules: React.FC = () => {
-  const [rules, setRules] = useState<NetworkRule[]>([]);
+  const [
+    shouldUpdateRuleRef,
+    rules,
+    setRulesWithUpdate,
+    setRulesWithoutUpdate,
+  ] = useStateWithUpdateRef<NetworkRule[]>([]);
   const linkRules = useMemo(() => generateLinkRules(rules), [rules]);
   const [activeRule, setActiveRule] = useState<NetworkRule>();
   const { token } = useToken();
-
   useEffect(() => {
     const subscription = request.rules$.subscribe((rules) => {
-      setRules(rules);
+      setRulesWithUpdate(rules);
     });
 
     return () => subscription.unsubscribe();
-  });
+  }, []);
 
   useEffect(() => {
     if (!activeRule) {
@@ -116,9 +152,20 @@ const NetworkRules: React.FC = () => {
     const subscription = watch((value, { type }) => {
       if (type !== "change" || !value) return;
       void request.updateRule(value as NetworkRule);
+      setRulesWithoutUpdate((rules) =>
+        rules.map((oldRule) =>
+          oldRule.id === value.id ? (value as NetworkRule) : oldRule
+        )
+      );
     });
     return () => subscription.unsubscribe();
   }, [watch]);
+
+  const continueRequest = useWatch({
+    control: methods.control,
+    name: "modifyInfo.continueRequest",
+    exact: true,
+  });
 
   const handleDeleteRule = (ruleId?: string) => {
     if (ruleId) {
@@ -136,8 +183,12 @@ const NetworkRules: React.FC = () => {
   };
 
   useEffect(() => {
-    // defaultValue will be modified if keepDefaultValues is not true
-    reset(activeRule, { keepDefaultValues: true });
+    if (shouldUpdateRuleRef.current) {
+      // defaultValue will be modified if keepDefaultValues is not true
+      reset(activeRule, { keepDefaultValues: true });
+    } else {
+      shouldUpdateRuleRef.current = true;
+    }
   }, [activeRule]);
 
   const { showContextMenu, contextMenuNode } =
@@ -194,7 +245,7 @@ const NetworkRules: React.FC = () => {
                   render={({ field }) => (
                     <Select
                       {...field}
-                      className="w-[100px]"
+                      className="w-24"
                       options={METHOD_OPTIONS.map((item) => ({
                         ...item,
                         label: <HttpBadge value={item.label} />,
@@ -221,8 +272,12 @@ const NetworkRules: React.FC = () => {
               />
               <Controller
                 name="modifyInfo.continueRequest"
-                render={({ field }) => (
-                  <Checkbox className="self-start" {...field}>
+                render={({ field: { onChange, ...field } }) => (
+                  <Checkbox
+                    className="self-start"
+                    {...field}
+                    onChange={(e) => onChange(e.target.checked)}
+                  >
                     Continue Request
                   </Checkbox>
                 )}
@@ -237,37 +292,37 @@ const NetworkRules: React.FC = () => {
                     children: (
                       <div className="flex flex-col gap-2 h-full">
                         <div className="flex gap-2">
-                        <Controller
-                          name="modifyInfo.response.status"
-                          render={({ field }) => (
+                          <Controller
+                            name="modifyInfo.response.status"
+                            render={({ field }) => (
                               <Select
                                 {...field}
                                 className="w-[250px]"
                                 showSearch
                               >
-                              {STATUS_CODE_OPTIONS.map((group) => (
-                                <Select.OptGroup
-                                  key={group.label}
-                                  label={group.label}
-                                >
-                                  {group.children.map((item) => (
-                                    <Select.Option
-                                      key={`${group.label}-${item.value}`}
-                                      value={item.value}
-                                    >
-                                      {item.label}
-                                    </Select.Option>
-                                  ))}
-                                </Select.OptGroup>
-                              ))}
-                            </Select>
-                          )}
-                        />
-                        <Controller
+                                {STATUS_CODE_OPTIONS.map((group) => (
+                                  <Select.OptGroup
+                                    key={group.label}
+                                    label={group.label}
+                                  >
+                                    {group.children.map((item) => (
+                                      <Select.Option
+                                        key={`${group.label}-${item.value}`}
+                                        value={item.value}
+                                      >
+                                        {item.label}
+                                      </Select.Option>
+                                    ))}
+                                  </Select.OptGroup>
+                                ))}
+                              </Select>
+                            )}
+                          />
+                          <Controller
                             name="modifyInfo.response.delay"
                             render={({ field }) => (
                               <InputNumber
-                                className="w-[100px]"
+                                className="w-28"
                                 prefix={<ClockCircleOutlined />}
                                 controls={false}
                                 min={0}
@@ -295,15 +350,166 @@ const NetworkRules: React.FC = () => {
                   {
                     label: "Response Headers",
                     key: "response headers",
+                    children: (
+                      <div className="flex flex-col gap-2 h-full">
+                        <ArrayField name="modifyInfo.response.responseHeaders">
+                          {(fields, { append, remove }) => {
+                            return (
+                              <>
+                                {fields.map(({ id, getName }, index) => {
+                                  return (
+                                    <Fragment key={id}>
+                                      <Space.Compact>
+                                        <Controller
+                                          name={getName("0")}
+                                          render={({ field }) => (
+                                            <Input
+                                              className="w-48"
+                                              {...field}
+                                              placeholder={
+                                                lang.rule.headerNamePlaceHolder
+                                              }
+                                            />
+                                          )}
+                                        />
+                                        <Controller
+                                          name={getName("1")}
+                                          render={({ field }) => (
+                                            <Input
+                                              {...field}
+                                              placeholder={
+                                                lang.rule.headerValuePlaceHolder
+                                              }
+                                            />
+                                          )}
+                                        />
+                                        <Button onClick={() => remove(index)}>
+                                          <MinusCircleOutlined />
+                                        </Button>
+                                      </Space.Compact>
+                                    </Fragment>
+                                  );
+                                })}
+                                <Button
+                                  type="dashed"
+                                  block
+                                  className="w-40"
+                                  icon={<PlusOutlined />}
+                                  onClick={() => {
+                                    append([["", ""]]);
+                                  }}
+                                >
+                                  {lang.rule.addHeaderTitle}
+                                </Button>
+                              </>
+                            );
+                          }}
+                        </ArrayField>
+                      </div>
+                    ),
                   },
-                  {
-                    label: "Request",
-                    key: "request",
-                  },
-                  {
-                    label: "Request Headers",
-                    key: "request headers",
-                  },
+                  ...(continueRequest
+                    ? [
+                        {
+                          label: "Request",
+                          key: "request",
+                          children: (
+                            <div className="flex flex-col gap-2 h-full">
+                              <Controller
+                                name="modifyInfo.response.delay"
+                                render={({ field }) => (
+                                  <InputNumber
+                                    className="w-28"
+                                    prefix={<ClockCircleOutlined />}
+                                    controls={false}
+                                    min={0}
+                                    precision={3}
+                                    {...field}
+                                    placeholder={lang.rule.delayPlaceHolder}
+                                  />
+                                )}
+                              />
+                              <Controller
+                                name="modifyInfo.response.responseBody"
+                                render={({ field: { ref, ...field } }) => (
+                                  <Editor
+                                    {...field}
+                                    flex
+                                    theme="vs-dark"
+                                    language="json"
+                                  ></Editor>
+                                )}
+                              />
+                            </div>
+                          ),
+                        },
+                        {
+                          label: "Request Headers",
+                          key: "request headers",
+                          children: (
+                            <div className="flex flex-col gap-2 h-full">
+                              <ArrayField name="modifyInfo.request.requestHeaders">
+                                {(fields, { append, remove }) => {
+                                  return (
+                                    <>
+                                      {fields.map(({ id, getName }, index) => {
+                                        return (
+                                          <Fragment key={id}>
+                                            <Space.Compact>
+                                              <Controller
+                                                name={getName("0")}
+                                                render={({ field }) => (
+                                                  <Input
+                                                    className="w-48"
+                                                    {...field}
+                                                    placeholder={
+                                                      lang.rule
+                                                        .headerNamePlaceHolder
+                                                    }
+                                                  />
+                                                )}
+                                              />
+                                              <Controller
+                                                name={getName("1")}
+                                                render={({ field }) => (
+                                                  <Input
+                                                    {...field}
+                                                    placeholder={
+                                                      lang.rule
+                                                        .headerValuePlaceHolder
+                                                    }
+                                                  />
+                                                )}
+                                              />
+                                              <Button
+                                                onClick={() => remove(index)}
+                                              >
+                                                <MinusCircleOutlined />
+                                              </Button>
+                                            </Space.Compact>
+                                          </Fragment>
+                                        );
+                                      })}
+                                      <Button
+                                        type="dashed"
+                                        block
+                                        className="w-40"
+                                        icon={<PlusOutlined />}
+                                        onClick={() => {
+                                          append([["", ""]]);
+                                        }}
+                                      >
+                                        {lang.rule.addHeaderTitle}
+                                      </Button>
+                                    </>
+                                  );
+                                }}
+                              </ArrayField>
+                            </div>
+                          ),
+                        },
+                      ]
+                    : []),
                 ]}
               ></Tabs>
             </div>
