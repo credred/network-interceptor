@@ -6,5 +6,5 @@ export type {
 } from "./types";
 export { BLOB_TEXT } from "./constants";
 
-export { createInterceptedFetch } from "./core/fetch-interceptor";
-export { createInterceptedXhr } from "./core/xhr-interceptor";
+export { createFetch, createXhr } from "./adaptor/index";
+export type { AdaptorConfig } from "./adaptor/index";

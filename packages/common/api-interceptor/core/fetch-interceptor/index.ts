@@ -1,131 +1,30 @@
-import {
-  NetworkModifyInfo,
-  shouldContinueRequest,
-} from "../../../network-rule";
-import { assertNonNil, delay } from "../../../utils";
-import { InterceptorConfig, ResponseInfo } from "../../types";
-import {
-  applyModifyInfoToRequestInfo,
-  applyModifyInfoToResponseInfo,
-  generateErrorResponseInfo,
-} from "../utils";
-import {
-  generateRequestInfoByFetchRequest,
-  generateResponseInfoByFetchResponse,
-  generateResponseInfoByModifyInfo,
-} from "./utils";
+import { PowerRequest, PowerResponse } from "../base";
+import { InterceptorConfig } from "../types";
 
-const generateRequestByModifyInfo = (
-  requestModifyInfo: NetworkModifyInfo["request"],
-  oldRequest: Request
-): Request => {
-  if (requestModifyInfo) {
-    const { requestBody, requestHeaders } = requestModifyInfo;
-    const newRequest = new Request(oldRequest, {
-      body: requestBody ?? oldRequest.body,
-      headers: requestHeaders ?? oldRequest.headers,
-    });
-
-    return newRequest;
-  }
-
-  return oldRequest;
-};
-
-const generateFetchResponseByModifyInfo = async (
-  responseModifyInfo: NetworkModifyInfo["response"],
-  oldResponse?: Response
-) => {
-  let response = oldResponse;
-  if (responseModifyInfo) {
-    const {
-      status,
-      statusText,
-      delay: delayTime,
-      responseBody,
-      responseHeaders,
-    } = responseModifyInfo;
-    if (delayTime) {
-      await delay(delayTime * 1000);
-    }
-    response = new Response(responseBody ?? oldResponse?.body, {
-      headers: responseHeaders || oldResponse?.headers,
-      status,
-      statusText,
-    });
-  }
-
-  return response;
-};
-
-export const createInterceptedFetch = (
-  originFetch: typeof fetch,
-  config: InterceptorConfig
+export const createInterceptedFetch = <T>(
+  pureFetch: typeof fetch,
+  config: InterceptorConfig<T>
 ) => {
   async function interceptedFetch(
     input: Request | string | URL,
     init?: RequestInit
   ): Promise<Response> {
-    const request = new Request(input, init);
+    const powerRequest = new PowerRequest(input, init, config.createCtx());
+    let powerResponse = await config.onRequest(powerRequest);
 
-    const originRequestInfo = await generateRequestInfoByFetchRequest(request);
-    const rule = await config.matchRule(originRequestInfo.serialize());
-    const networkModifyInfo = rule?.modifyInfo;
-    const requestInfo = applyModifyInfoToRequestInfo(
-      originRequestInfo,
-      networkModifyInfo?.request,
-      rule?.id
-    );
-    const serializedRequestInfo = requestInfo.serialize();
-    config.requestWillBeSent(serializedRequestInfo);
-
-    let response: Response | undefined = undefined;
-    let responseInfo: ResponseInfo;
-    if (shouldContinueRequest(networkModifyInfo)) {
-      const newRequest = generateRequestByModifyInfo(
-        networkModifyInfo?.request,
-        request
-      );
-
+    if (!powerResponse || powerRequest.request.signal.aborted) {
       try {
-        response = await originFetch(newRequest);
-        const originResponseInfo = await generateResponseInfoByFetchResponse(
-          response,
-          serializedRequestInfo
-        );
-        responseInfo = applyModifyInfoToResponseInfo(
-          originResponseInfo,
-          networkModifyInfo?.response
+        powerResponse = new PowerResponse(
+          await pureFetch(powerRequest.request)
         );
       } catch (err) {
-        if (networkModifyInfo?.response) {
-          // make the response successful
-          responseInfo = generateResponseInfoByModifyInfo(
-            networkModifyInfo.response,
-            serializedRequestInfo
-          );
-        } else {
-          config.responseReceived(generateErrorResponseInfo(requestInfo));
-          throw (err as Error).message;
-        }
+        config.onError?.(powerRequest, err);
+        throw (err as Error).message;
       }
-    } else {
-      // networkModifyInfo must not be undefined because of shouldContinueRequest called
-      assertNonNil(networkModifyInfo);
-      responseInfo = generateResponseInfoByModifyInfo(
-        networkModifyInfo.response,
-        serializedRequestInfo
-      );
     }
-    // one of response or networkModifyInfo must not be undefined
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    response = (await generateFetchResponseByModifyInfo(
-      networkModifyInfo?.response,
-      response
-    ))!;
-    config.responseReceived(responseInfo);
+    await config.onResponse(powerRequest, powerResponse);
 
-    return response;
+    return powerResponse.response;
   }
 
   return interceptedFetch;

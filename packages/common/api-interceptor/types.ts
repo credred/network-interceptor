@@ -39,9 +39,3 @@ export type MatchRule = (
 ) => Promise<NetworkRule | undefined>;
 export type RequestWillBeSent = (requestInfo: RequestInfo) => void;
 export type ResponseReceived = (responseInfo: ResponseInfo) => void;
-
-export interface InterceptorConfig {
-  matchRule: MatchRule;
-  requestWillBeSent: RequestWillBeSent;
-  responseReceived: ResponseReceived;
-}

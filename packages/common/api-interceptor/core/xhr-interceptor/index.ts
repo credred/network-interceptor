@@ -1,17 +1,10 @@
-import _, { toString } from "lodash";
-import uid from "tiny-uid";
-import {
-  NetworkModifyInfo,
-  shouldContinueRequest,
-} from "../../../network-rule";
-import { delay } from "../../../utils";
-import { InterceptorConfig, ResponseInfo } from "../../types";
-import { AdvancedRequestInfo } from "../../utils/RequestInfo";
-import {
-  applyModifyInfoToRequestInfo,
-  generateErrorResponseInfo,
-  postTask,
-} from "../utils";
+import { PowerRequest, PowerResponse } from "../base";
+import { InterceptorConfig } from "../types";
+import { postTask } from "../utils";
+import { createResponse, isDomParserSupportedType } from "./utils";
+import { parseBuffer } from "./utils/parseBuffer";
+import { parseRequestBody } from "./utils/parseRequestBody";
+import { readStream } from "./utils/readStream";
 
 type fn = () => void;
 
@@ -73,15 +66,15 @@ const cloneEvent = <T extends Event>(event: T) => {
   return new event.constructor(event.type, event) as T;
 };
 
-export const createInterceptedXhr = (
-  OriginXhr: typeof XMLHttpRequest,
-  config: InterceptorConfig
+export const createInterceptedXhr = <T>(
+  PureXMLHttpRequest: typeof XMLHttpRequest,
+  config: InterceptorConfig<T>
 ): typeof XMLHttpRequest => {
   class InterceptedXhr extends EventTarget implements XMLHttpRequest {
     static {
       implementXhrNativeEvent(InterceptedXhr);
     }
-    originXhr = new OriginXhr();
+    originXhr = new PureXMLHttpRequest();
 
     constructor() {
       super();
@@ -102,31 +95,11 @@ export const createInterceptedXhr = (
       this.originXhr.onreadystatechange = async () => {
         if (this.originXhr.readyState === 4) {
           // we use readystatechange event instead of onload event and onerror event, because the former is triggered first
-          if (this.originXhr.status === 0) {
-            // xhr failed to request
-            if (this.#networkModifyInfo?.response) {
-              // if modifyInfo.response exist using it as response
-              await this.#changeXhrResponseByModifyInfo();
-              const responseInfo = this.#generateResponseInfoByXhr();
-              config.responseReceived(responseInfo);
-            } else {
-              const responseInfo = generateErrorResponseInfo(
-                this.#requestInfo!
-              );
-              config.responseReceived(responseInfo);
-            }
-          } else {
-            await this.#changeXhrResponseByModifyInfo(this.originXhr);
-            const responseInfo = this.#generateResponseInfoByXhr();
-            config.responseReceived(responseInfo);
-          }
+          await this.#onPureResponse?.();
         }
         this.#readyState = this.originXhr.readyState;
       };
     }
-
-    #requestInfo: AdvancedRequestInfo | undefined = undefined;
-    #networkModifyInfo?: NetworkModifyInfo;
 
     open(method: string, url: string | URL): void;
     open(
@@ -143,59 +116,68 @@ export const createInterceptedXhr = (
       username?: string | null | undefined,
       password?: string | null | undefined
     ): void {
-      if (typeof async === "boolean") {
-        this.originXhr.open(method, url, async, username, password);
-      } else {
-        this.originXhr.open(method, url);
-      }
-      this.#requestInfo = new AdvancedRequestInfo({
-        id: uid(),
-        url: toString(new URL(url, location.href).toString()),
-        stage: "request",
-        type: "xhr",
-        method: toString(method).toUpperCase(),
-        requestHeaders: undefined,
-      });
       this.#resetXhr();
+      this.#url = url;
+      this.#method = method;
+      this.#async = async;
+      this.#username = username;
+      this.#password = password;
       this.#readyState = 1;
     }
 
     setRequestHeader(name: string, value: string): void {
       this.#verifyState();
-      if (!this.#requestInfo) return;
-      if (!this.#requestInfo.requestHeaders) {
-        this.#requestInfo.requestHeaders = new Headers();
-      }
-      this.#requestInfo.requestHeaders.set(name, value);
+      this.#requestHeaders.set(name, value);
     }
 
     send(body?: Document | XMLHttpRequestBodyInit | null | undefined): void {
       const asyncSend = async () => {
-        if (!this.#requestInfo) return;
-        this.#requestInfo.requestBody = await this.#convertRequestBody(body);
-        const rule = await config.matchRule(this.#requestInfo.serialize());
-        this.#networkModifyInfo = rule?.modifyInfo;
-        this.#requestInfo = applyModifyInfoToRequestInfo(
-          this.#requestInfo,
-          rule?.modifyInfo?.request,
-          rule?.id
+        if (body instanceof Document) {
+          this.setRequestHeader("Content-Type", body.contentType);
+          const serializer = new XMLSerializer();
+          body = serializer.serializeToString(body);
+        }
+        const powerRequest = new PowerRequest(
+          this.#url,
+          {
+            method: this.#method,
+            headers: this.#requestHeaders,
+            credentials: this.originXhr.withCredentials
+              ? "include"
+              : "same-origin",
+            body: ["GET", "HEAD"].includes(this.#method.toUpperCase())
+              ? null
+              : body,
+          },
+          config.createCtx()
         );
-        config.requestWillBeSent(this.#requestInfo.serialize());
+        const powerResponse = await config.onRequest(powerRequest);
 
-        if (shouldContinueRequest(this.#networkModifyInfo)) {
+        if (!powerResponse) {
           // convertRequestBody function will break body of type blob.
           // so we use origin body directly if requestBody dost not exist
-          this.#realSend(this.#networkModifyInfo?.request?.requestBody || body);
+          this.#onPureResponse = async () => {
+            if (this.originXhr.status === 0) {
+              // xhr failed to request
+              config.onError?.(powerRequest, undefined);
+            } else {
+              const powerResponse = new PowerResponse(
+                createResponse(this.response as BodyInit, this.originXhr)
+              );
+              await config.onResponse(powerRequest, powerResponse);
+              await this.#applyResponse(powerResponse.response);
+            }
+          };
+          await this.#realSend(powerRequest.request);
         } else {
           await postTask();
-          this.#responseURL = this.#requestInfo.url;
+          this.#responseURL = powerRequest.request.url;
           this.#readyState = 2;
           await postTask();
           this.#readyState = 3;
           await postTask();
-          await this.#changeXhrResponseByModifyInfo();
-          const responseInfo = this.#generateResponseInfoByXhr();
-          config.responseReceived(responseInfo);
+          await config.onResponse(powerRequest, powerResponse);
+          await this.#applyResponse(powerResponse.response);
           this.#readyState = 4;
           this.dispatchEvent(new ProgressEvent("load"));
           this.dispatchEvent(new ProgressEvent("loadend"));
@@ -230,109 +212,38 @@ export const createInterceptedXhr = (
       }
     }
 
-    #convertRequestBody(
-      body?: Document | XMLHttpRequestBodyInit | null | undefined
-    ) {
-      if (body instanceof Document) {
-        const serializer = new XMLSerializer();
-        return serializer.serializeToString(body);
-      } else if (_.isObject(body)) {
-        return new Response(body).text();
-      } else {
-        return toString(body);
-      }
-    }
-
-    #convertResponseBody(responseBody?: string) {
-      if (this.responseType === "" || this.responseType === "text") {
-        return responseBody;
-      } else if (this.responseType === "json") {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-          return JSON.parse(responseBody || "");
-        } catch (e) {
-          // Return parsing failure as null
-          return null;
-        }
-      }
-
-      return responseBody;
-    }
-
-    #parseResponseHeaders(rawHeaders?: string) {
-      if (!rawHeaders) return undefined;
-      return rawHeaders
-        .trim()
-        .split("\r\n")
-        .reduce<Headers>((headers, line) => {
-          const parts = line.split(": ");
-          const header = parts.shift();
-          const value = parts.join(": ");
-          if (header) {
-            headers.set(header, value);
-          }
-          return headers;
-        }, new Headers());
-    }
     //#endregion
 
     //#region modifyInfo helper
     #resetXhr() {
       this.#responseURL = "";
-      this.#response = "";
-      this.#responseText = "";
       this.#status = 0;
+      this.#url = "";
+      this.#method = "";
+      this.#async = undefined;
+      this.#username = undefined;
+      this.#password = undefined;
       this.#statusText = "";
       this.#responseHeaders = undefined;
     }
-    #realSend(body: Document | XMLHttpRequestBodyInit | null | undefined) {
-      if (!this.#requestInfo) return;
-      for (const [key, value] of this.#requestInfo.requestHeaders?.entries() ||
-        []) {
-        this.originXhr.setRequestHeader(key, value);
-      }
-      this.originXhr.send(body);
-    }
-    async #changeXhrResponseByModifyInfo(xhr?: XMLHttpRequest) {
-      const modifyInfo = this.#networkModifyInfo?.response;
-      if (modifyInfo?.delay) {
-        await delay(modifyInfo.delay * 1000);
-      }
-      if (modifyInfo?.responseBody) {
-        this.#response = this.#convertResponseBody(modifyInfo?.responseBody);
+    async #realSend(request: Request) {
+      if (typeof this.#async === "boolean") {
+        this.originXhr.open(
+          request.method,
+          request.url,
+          this.#async,
+          this.#username,
+          this.#password
+        );
       } else {
-        this.#response = xhr?.response || "";
+        this.originXhr.open(request.method, request.url);
       }
-      // read xhr.responseText if originChr.responseType is valid value
-      this.#responseText =
-        modifyInfo?.responseBody ||
-        (["", "text"].includes(this.originXhr.responseType) &&
-          xhr?.responseText) ||
-        "";
-      // TODO: XML support override
-      this.#responseXML =
-        (["", "document"].includes(this.originXhr.responseType) &&
-          xhr?.responseXML) ||
-        null;
-      this.#status = modifyInfo?.status || xhr?.status || 200;
-      this.#statusText = modifyInfo?.statusText || xhr?.statusText || "";
-      this.#responseHeaders =
-        new Headers(modifyInfo?.responseHeaders) ||
-        this.#parseResponseHeaders(xhr?.getAllResponseHeaders());
+      request.headers.forEach((value, key) => {
+        this.originXhr.setRequestHeader(key, value);
+      });
+      this.originXhr.send(await parseRequestBody(request));
     }
-    #generateResponseInfoByXhr(): ResponseInfo {
-      return {
-        ...this.#requestInfo!.serialize(),
-        stage: "response",
-        status: this.status,
-        statusText: this.statusText,
-        responseHeaders: this.#responseHeaders
-          ? Array.from(this.#responseHeaders?.entries())
-          : undefined,
-        responseBody: toString(this.response),
-        responseBodyParsable: true,
-      };
-    }
+
     //#endregion
 
     //#region modifiable method
@@ -360,6 +271,21 @@ export const createInterceptedXhr = (
 
     //#region modifiable prop
     #realReadyState = 0;
+    #url: string | URL = "";
+    #method = "";
+    #async?: boolean;
+    #username?: string | null;
+    #password?: string | null;
+    #requestHeaders = new Headers();
+    #onPureResponse?: () => Promise<void>;
+    #responseBuffer = new Uint8Array();
+    async #applyResponse(response: Response) {
+      this.#responseHeaders = response.headers;
+      this.#responseBuffer = await readStream(response.body);
+      this.#status = response.status;
+      this.#statusText = response.statusText;
+    }
+
     get #readyState() {
       return this.#realReadyState;
     }
@@ -376,21 +302,56 @@ export const createInterceptedXhr = (
       return this.#readyState;
     }
 
-    #response: unknown = "";
     get response(): unknown {
-      return this.#response;
+      if (this.#readyState !== this.DONE) {
+        return null;
+      }
+
+      return parseBuffer(
+        this.#responseBuffer,
+        this.originXhr.responseType,
+        this.getResponseHeader("Content-Type")
+      );
     }
 
-    #responseText = "";
+    get #responseBufferText() {
+      const decoder = new TextDecoder();
+      return decoder.decode(this.#responseBuffer);
+    }
+
     get responseText() {
       this.#verifyResponseText();
-      return this.#responseText;
+
+      if (this.#readyState !== this.LOADING && this.#readyState !== this.DONE) {
+        return "";
+      }
+
+      return this.#responseBufferText;
     }
 
-    #responseXML: Document | null = null;
     get responseXML() {
       this.#verifyResponseXML();
-      return this.#responseXML;
+      if (this.#readyState !== this.DONE) {
+        return null;
+      }
+
+      const contentType = this.getResponseHeader("Content-Type") || "";
+
+      if (typeof DOMParser === "undefined") {
+        console.warn(
+          "Cannot retrieve XMLHttpRequest response body as XML: DOMParser is not defined. You are likely using an environment that is not browser or does not polyfill browser globals correctly."
+        );
+        return null;
+      }
+
+      if (isDomParserSupportedType(contentType)) {
+        return new DOMParser().parseFromString(
+          this.#responseBufferText,
+          contentType
+        );
+      }
+
+      return null;
     }
 
     #status = 0;
@@ -444,34 +405,34 @@ export const createInterceptedXhr = (
     onprogress = null;
     ontimeout = null;
     static get DONE() {
-      return OriginXhr.DONE;
+      return PureXMLHttpRequest.DONE;
     }
     static get HEADERS_RECEIVED() {
-      return OriginXhr.HEADERS_RECEIVED;
+      return PureXMLHttpRequest.HEADERS_RECEIVED;
     }
     static get LOADING() {
-      return OriginXhr.LOADING;
+      return PureXMLHttpRequest.LOADING;
     }
     static get OPENED() {
-      return OriginXhr.OPENED;
+      return PureXMLHttpRequest.OPENED;
     }
     static get UNSENT() {
-      return OriginXhr.UNSENT;
+      return PureXMLHttpRequest.UNSENT;
     }
     get DONE() {
-      return OriginXhr.DONE;
+      return PureXMLHttpRequest.DONE;
     }
     get HEADERS_RECEIVED() {
-      return OriginXhr.HEADERS_RECEIVED;
+      return PureXMLHttpRequest.HEADERS_RECEIVED;
     }
     get LOADING() {
-      return OriginXhr.LOADING;
+      return PureXMLHttpRequest.LOADING;
     }
     get OPENED() {
-      return OriginXhr.OPENED;
+      return PureXMLHttpRequest.OPENED;
     }
     get UNSENT() {
-      return OriginXhr.UNSENT;
+      return PureXMLHttpRequest.UNSENT;
     }
     //#endregion
   }

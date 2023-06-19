@@ -1,16 +1,13 @@
 import { onMessage, sendMessage, setNamespace } from "webext-bridge/window";
-import {
-  createInterceptedFetch,
-  createInterceptedXhr,
-} from "common/api-interceptor";
-import { InterceptorConfig } from "common/api-interceptor/types";
+import { createFetch, createXhr } from "common/api-interceptor";
+import { AdaptorConfig } from "common/api-interceptor";
 
 let allSiteDisabled = false;
 let ruleDisabled = false;
 
 const oldFetch = fetch;
 const oldXhr = XMLHttpRequest;
-const interceptorConfig: InterceptorConfig = {
+const interceptorConfig: AdaptorConfig = {
   matchRule: async (requestInfo) => {
     if (ruleDisabled || allSiteDisabled) {
       return undefined;
@@ -25,8 +22,8 @@ const interceptorConfig: InterceptorConfig = {
   },
 };
 
-const newFetch = createInterceptedFetch(oldFetch, interceptorConfig);
-const newXhr = createInterceptedXhr(oldXhr, interceptorConfig);
+const newFetch = createFetch(oldFetch, interceptorConfig);
+const newXhr = createXhr(oldXhr, interceptorConfig);
 
 window.fetch = newFetch;
 window.XMLHttpRequest = newXhr;
