@@ -1,7 +1,7 @@
 import * as monaco from "monaco-editor";
 import MonacoEditor, { loader } from "@monaco-editor/react";
 import type * as EditorType from "@monaco-editor/react";
-import { FC, useRef } from "react";
+import React, { FC, useRef, useState } from "react";
 import { useMemoizedFn, useUpdateEffect } from "ahooks";
 import classNames from "classnames";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
@@ -12,6 +12,7 @@ import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker"
 import useElementWithStyle, { RenderNode } from "./style";
 import { usePrefixCls } from "../_utils/usePrefixCls";
 import Button from "../Button";
+import CursorPosition from "./components/CursorPosition";
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
@@ -103,6 +104,7 @@ const Editor: FC<EditorProps> = (props) => {
   const { prefixCls: componentCls, genCls } = usePrefixCls("editor", prefixCls);
   const { value } = props;
 
+  const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor>();
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
 
   const formatCode = () => {
@@ -117,6 +119,8 @@ const Editor: FC<EditorProps> = (props) => {
 
   const onEditorMount: EditorType.OnMount = (editor, monaco) => {
     editorRef.current = editor;
+    setEditor(editor);
+
     const disposer = editor.onDidChangeModelLanguageConfiguration(() => {
       // hack for ready event
       // https://github.com/microsoft/monaco-editor/issues/115
@@ -163,6 +167,7 @@ const Editor: FC<EditorProps> = (props) => {
           <Button type="text" onClick={() => void formatCode()}>
             {"{ }"}
           </Button>
+          <CursorPosition editor={editor} />
         </div>
       )}
     </div>
