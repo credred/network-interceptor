@@ -335,9 +335,11 @@ const NetworkRules: React.FC = () => {
                         </div>
                         <Controller
                           name="modifyInfo.response.responseBody"
+                          defaultValue=""
                           render={({ field: { ref, ...field } }) => (
                             <Editor
                               {...field}
+                              seed={activeRule.id}
                               flex
                               theme="vs-dark"
                               language="json"
@@ -431,9 +433,11 @@ const NetworkRules: React.FC = () => {
                               />
                               <Controller
                                 name="modifyInfo.response.responseBody"
+                                defaultValue=""
                                 render={({ field: { ref, ...field } }) => (
                                   <Editor
                                     {...field}
+                                    seed={activeRule.id}
                                     flex
                                     theme="vs-dark"
                                     language="json"
