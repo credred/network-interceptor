@@ -151,7 +151,7 @@ const NetworkRules: React.FC = () => {
   useEffect(() => {
     const subscription = watch((value, { type }) => {
       if (type !== "change" || !value) return;
-      void request.updateRule(value as NetworkRule);
+      void request.updateRule(value as NetworkRule, true);
       setRulesWithoutUpdate((rules) =>
         rules.map((oldRule) =>
           oldRule.id === value.id ? (value as NetworkRule) : oldRule

@@ -6,7 +6,8 @@ import { StorageMessage, StorageMessageStreamName } from "./constants";
 
 type Client = {
   [P in keyof typeof StorageMessage]: (
-    data: GetDataType<(typeof StorageMessage)[P]>["data"]
+    data: GetDataType<(typeof StorageMessage)[P]>["data"],
+    withOperator?: boolean
   ) => Promise<GetReturnType<(typeof StorageMessage)[P]>>;
 } & {
   rules$: Observable<NetworkRule[]>;
@@ -24,10 +25,16 @@ export const createStorageClient = (
     const client = Object.entries(StorageMessage).reduce<Client>(
       (result: Client, [messageKey, messageValue]) => {
         //@ts-expect-error ts union type error
-        result[messageKey] = (data: GetDataType<StorageMessage>["data"]) => {
+        result[messageKey] = (
+          data: GetDataType<StorageMessage>["data"],
+          withOperator = false
+        ) => {
           return sendMessage(
             messageValue,
-            { data, operator } as GetDataType<StorageMessage>,
+            {
+              data,
+              operator: withOperator ? operator : undefined,
+            } as GetDataType<StorageMessage>,
             destination
           );
         };
