@@ -66,6 +66,40 @@ const cloneEvent = <T extends Event>(event: T) => {
   return new event.constructor(event.type, event) as T;
 };
 
+const createDelayLoad = (xhr: XMLHttpRequest) => {
+  let isDelaying = false;
+  let loadEvent: ProgressEvent | undefined = undefined;
+  let loadendEvent: ProgressEvent | undefined = undefined;
+  const startDelay = () => {
+    isDelaying = true;
+  };
+
+  const tryDelayLoadEvent = (event: ProgressEvent) => {
+    if (isDelaying) {
+      loadEvent = event;
+    } else {
+      xhr.dispatchEvent(cloneEvent(event));
+    }
+  };
+  const tryDelayLoadendEvent = (event: ProgressEvent) => {
+    if (isDelaying) {
+      loadendEvent = event;
+    } else {
+      xhr.dispatchEvent(cloneEvent(event));
+    }
+  };
+
+  const resumeEvent = () => {
+    loadEvent && xhr.dispatchEvent(loadEvent);
+    loadendEvent && xhr.dispatchEvent(loadendEvent);
+    loadEvent = undefined;
+    loadendEvent = undefined;
+    isDelaying = false;
+  };
+
+  return { startDelay, tryDelayLoadEvent, tryDelayLoadendEvent, resumeEvent };
+};
+
 export const createInterceptedXhr = <T>(
   PureXMLHttpRequest: typeof XMLHttpRequest,
   config: InterceptorConfig<T>
@@ -75,6 +109,7 @@ export const createInterceptedXhr = <T>(
       implementXhrNativeEvent(InterceptedXhr);
     }
     originXhr = new PureXMLHttpRequest();
+    #delayLoad = createDelayLoad(this);
 
     constructor() {
       super();
@@ -87,17 +122,22 @@ export const createInterceptedXhr = <T>(
           this.dispatchEvent(cloneEvent(event));
         }
       };
-      this.originXhr.onload = (event) => this.dispatchEvent(cloneEvent(event));
+      this.originXhr.onload = (event) =>
+        this.#delayLoad.tryDelayLoadEvent(event);
       this.originXhr.onloadend = (event) =>
-        this.dispatchEvent(cloneEvent(event));
+        this.#delayLoad.tryDelayLoadendEvent(event);
       this.originXhr.onloadstart = (event) =>
         this.dispatchEvent(cloneEvent(event));
       this.originXhr.onreadystatechange = async () => {
         if (this.originXhr.readyState === 4) {
           // we use readystatechange event instead of onload event and onerror event, because the former is triggered first
+          this.#delayLoad.startDelay();
           await this.#onPureResponse?.();
+          this.#readyState = this.originXhr.readyState;
+          this.#delayLoad.resumeEvent();
+        } else {
+          this.#readyState = this.originXhr.readyState;
         }
-        this.#readyState = this.originXhr.readyState;
       };
     }
 
@@ -162,7 +202,10 @@ export const createInterceptedXhr = <T>(
               config.onError?.(powerRequest, undefined);
             } else {
               const powerResponse = new PowerResponse(
-                createResponse(this.response as BodyInit, this.originXhr)
+                createResponse(
+                  this.originXhr.response as BodyInit,
+                  this.originXhr
+                )
               );
               await config.onResponse(powerRequest, powerResponse);
               await this.#applyResponse(powerResponse.response);
