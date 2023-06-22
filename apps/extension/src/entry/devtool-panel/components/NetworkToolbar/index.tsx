@@ -3,9 +3,11 @@ import { StopOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { FC } from "react";
 
 interface NetworkToolbarProps {
+  preserveLog?: boolean;
   clear: () => void;
   onOpenRules: () => void;
   search: (value: string) => void;
+  togglePreserveLog: (enabled: boolean) => void;
   toggleRecord: (enabled: boolean) => void;
   disableRule: (disabled: boolean) => void;
 }
@@ -15,6 +17,7 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
     clear: () => props.clear(),
     onOpenRules: () => props.onOpenRules(),
     search: props.search,
+    togglePreserveLog: (disabled: boolean) => props.togglePreserveLog(disabled),
     toggleRecord: (enabled: boolean) => props.toggleRecord(enabled),
     disableRule: (disabled: boolean) => props.disableRule(disabled),
   };
@@ -34,6 +37,13 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
       <Divider type="vertical" />
       <Checkbox onChange={(e) => actions.toggleRecord(e.target.checked)}>
         Request To Rule
+      </Checkbox>
+      <Divider type="vertical" />
+      <Checkbox
+        value={props.preserveLog}
+        onChange={(e) => actions.togglePreserveLog(e.target.checked)}
+      >
+        Preserve Log
       </Checkbox>
       <Checkbox onChange={(e) => actions.disableRule(e.target.checked)}>
         Disable Rule

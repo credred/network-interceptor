@@ -11,6 +11,9 @@ import NetworkRules from "../NetworkRules";
 import { useMemoizedFn, useMount } from "ahooks";
 import { request } from "../utils/request";
 import useFilterNetworkInfo from "./useFilterNetworkInfo";
+import { devtools } from "webextension-polyfill";
+import { useLocalStorageState } from "../../../../hooks/useExtensionStorageState";
+import { ExtensionStorageKey } from "../../../../lib/extensionStorage/constants";
 const debug = debugFn("Network-Manager");
 
 const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
@@ -71,6 +74,15 @@ const useData = (onReceive: (networkInfo: NetworkInfo) => void) => {
   return [data, setData] as const;
 };
 
+const usePageChange = (callback: () => void, enabled: boolean) => {
+  useEffect(() => {
+    if (!enabled) return;
+    devtools.network.onNavigated.addListener(callback);
+
+    return () => devtools.network.onNavigated.removeListener(callback);
+  }, [enabled]);
+};
+
 const useDataManager = (onReceive: (networkInfo: NetworkInfo) => void) => {
   const [data, setData] = useData(onReceive);
   const originNetworkInfoList = useMemo(
@@ -117,6 +129,11 @@ const useCurrentNetworkDetail = (data: Record<string, NetworkInfo>) => {
 
 const Network: FC = () => {
   const [enableRecord, setEnableRecord] = useState(false);
+  const [preserveLog, setPreserveLog] = useLocalStorageState(
+    ExtensionStorageKey.preserveLog,
+    false,
+    false
+  );
   const ruleDisabled = useRef(false);
 
   const { data, networkInfoList, isEmpty, doFilter, clearData } =
@@ -129,6 +146,10 @@ const Network: FC = () => {
   const [currentNetworkDetail, setCurrentNetworkDetail] =
     useCurrentNetworkDetail(data);
   const [rulesVisible, setRulesVisible] = useState(false);
+
+  usePageChange(() => {
+    clearData();
+  }, !preserveLog);
 
   useMount(() => {
     onMessage("pageLoad", () => {
@@ -146,7 +167,9 @@ const Network: FC = () => {
   return (
     <div className="h-full flex flex-col">
       <NetworkToolbar
+        preserveLog={preserveLog}
         clear={clearData}
+        togglePreserveLog={setPreserveLog}
         toggleRecord={setEnableRecord}
         search={doFilter}
         onOpenRules={() => setRulesVisible(true)}

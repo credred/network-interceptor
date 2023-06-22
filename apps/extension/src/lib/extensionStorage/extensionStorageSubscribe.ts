@@ -1,3 +1,4 @@
+import { noop } from "lodash";
 import Browser from "webextension-polyfill";
 
 export interface AsyncStorage {
@@ -9,20 +10,28 @@ export interface AsyncStorage {
 }
 
 export const extensionStorageSubscribeFactory = (storage: AsyncStorage) => {
-  return <T>(key: string, callback: (value: T) => void) => {
+  return <T>(
+    key: string,
+    callback: (value: T) => void,
+    listenChange = true
+  ) => {
     void storage.get(key).then((record) => {
       callback(record[key] as T);
     });
 
-    const listener = (
-      changes: Browser.Storage.StorageAreaSyncOnChangedChangesType
-    ) => {
-      if (changes[key]) {
-        callback((changes[key] as { newValue: T }).newValue);
-      }
-    };
-    storage.onChanged.addListener(listener);
-    return () => storage.onChanged.removeListener(listener);
+    if (listenChange) {
+      const listener = (
+        changes: Browser.Storage.StorageAreaSyncOnChangedChangesType
+      ) => {
+        if (changes[key]) {
+          callback((changes[key] as { newValue: T }).newValue);
+        }
+      };
+      storage.onChanged.addListener(listener);
+      return () => storage.onChanged.removeListener(listener);
+    } else {
+      return noop;
+    }
   };
 };
 

@@ -3,7 +3,7 @@ import {
   onMessage,
   sendMessage,
 } from "webext-bridge/content-script";
-import { extensionLocalStorageSubscribe } from "../../lib/extensionStorageSubscribe";
+import { extensionLocalStorageSubscribe } from "../../lib/extensionStorage/extensionStorageSubscribe";
 
 onMessage("pageLoad", () => {
   extensionLocalStorageSubscribe<boolean>("allSiteEnabled", (value) => {
