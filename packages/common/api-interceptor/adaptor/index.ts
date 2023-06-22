@@ -44,11 +44,10 @@ const serializePowerResponse = async (
   return {
     ...powerRequest.ctx.requestInfo,
     stage: "response",
-    responseBody: await parseResponseBody(powerResponse.response.clone()),
+    ...(await parseResponseBody(powerResponse.response.clone())),
     status: powerResponse.response.status,
     statusText: powerResponse.response.statusText,
     responseHeaders: Array.from(powerResponse.response.headers.entries()),
-    responseBodyParsable: true,
   };
 };
 
@@ -109,7 +108,7 @@ const transformConfig = (
         status: 0,
         statusText: "(failed)",
         responseBody: "",
-        responseBodyParsable: true,
+        isBase64: false,
       });
     },
     createCtx() {

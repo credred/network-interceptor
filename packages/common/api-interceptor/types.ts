@@ -22,7 +22,7 @@ export interface ResponseInfo extends Omit<RequestInfo, "stage"> {
   statusText: string;
   responseHeaders?: Header[];
   responseBody?: string;
-  responseBodyParsable: boolean;
+  isBase64: boolean;
   originResponseHeaders?: Header[];
   originResponseBody?: string;
 }
