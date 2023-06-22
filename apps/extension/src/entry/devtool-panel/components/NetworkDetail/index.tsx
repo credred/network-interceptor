@@ -7,6 +7,7 @@ import { usePrevious, useMemoizedFn } from "ahooks";
 import debugFn from "debug";
 import { request } from "../utils/request";
 import { Header } from "common/typings";
+import Preview from "./components/Preview";
 const debug = debugFn("NetworkDetail");
 debugFn.enable("*");
 
@@ -179,13 +180,23 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
               children: <HeadersPanel detail={networkInfo} />,
             },
             {
+              label: "Preview",
+              key: "preview",
+              children: (
+                <Preview
+                  isBase64={networkInfo?.isBase64}
+                  value={networkInfo?.responseBody ?? ""}
+                />
+              ),
+            },
+            {
               label: "Response",
               key: "response",
               children: (
                 <Editor
                   seed={networkInfo?.id}
                   autoFormat
-                  options={{ readOnly: !networkInfo?.responseBodyParsable }}
+                  options={{ readOnly: networkInfo?.isBase64 }}
                   theme="vs-dark"
                   language={lang}
                   value={networkInfo?.responseBody ?? ""}
