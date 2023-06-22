@@ -16,6 +16,8 @@ import Table from "./components/Table";
 import Tabs from "./components/Tabs";
 import Modal from "./components/Modal";
 import Editor from "./components/Editor";
+export { default as Input } from "./components/Input";
+export type { InputProps } from "./components/Input";
 import List from "./components/List";
 import { theme } from "antd";
 
