@@ -14,6 +14,7 @@ export * from "./components/ContextMenu";
 export type { SplitterProps } from "./components/Splitter";
 import Table from "./components/Table";
 import Tabs from "./components/Tabs";
+export { default as Tree } from "./components/Tree";
 import Modal from "./components/Modal";
 import Editor from "./components/Editor";
 export { default as Input } from "./components/Input";
