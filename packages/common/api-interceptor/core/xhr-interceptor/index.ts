@@ -1,6 +1,6 @@
 import { PowerRequest, PowerResponse } from "../base";
 import { InterceptorConfig } from "../types";
-import { postTask } from "../utils";
+import { postTask, statusHasBody } from "../utils";
 import { createResponse, isDomParserSupportedType } from "./utils";
 import { parseBuffer } from "./utils/parseBuffer";
 import { parseRequestBody } from "./utils/parseRequestBody";
@@ -53,7 +53,7 @@ const implementXhrNativeEvent = (XhrLike: typeof XMLHttpRequest) => {
         const func = this[`on${event.type}`];
         if (event.type in nativeEventObj && typeof func === "function") {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-          func?.(event);
+          func?.call(this, event);
         }
         return result;
       },
@@ -203,7 +203,9 @@ export const createInterceptedXhr = <T>(
             } else {
               const powerResponse = new PowerResponse(
                 createResponse(
-                  this.originXhr.response as BodyInit,
+                  statusHasBody(this.originXhr.status)
+                    ? (this.originXhr.response as BodyInit)
+                    : null,
                   this.originXhr
                 )
               );

@@ -7,3 +7,7 @@ export const postTask = (): Promise<void> => {
     channel.port2.postMessage("");
   });
 };
+
+export const statusHasBody = (status: number) => {
+  return ![101, 204, 205, 304].includes(status);
+};
