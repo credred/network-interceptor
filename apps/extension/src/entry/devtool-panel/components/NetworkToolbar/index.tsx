@@ -32,6 +32,7 @@ const NetworkToolbar: FC<NetworkToolbarProps> = (props) => {
         size="small"
         className="w-48"
         placeholder="Filter"
+        allowClear
         onChange={(e) => actions.search(e.target.value)}
       />
       <Divider type="vertical" />

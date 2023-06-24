@@ -9,7 +9,9 @@ export const parseResponseBody = async (
   response: Response
 ): Promise<Pick<ResponseInfo, "isBase64" | "responseBody">> => {
   const contentType = response.headers.get("content-type");
-  if (
+  if (response.body === null) {
+    return { responseBody: "", isBase64: false };
+  } else if (
     contentType &&
     (contentType.includes("text/") ||
       contentType.includes("application/json") ||

@@ -218,7 +218,7 @@ const NetworkRules: React.FC = () => {
             onContextMenu={(event) => showContextMenu(item, { event })}
           >
             <div className="flex-1 w-full">
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-1">
                 <div className="truncate">{item.baseMatchRule.path}</div>
                 <HttpBadge value={item.baseMatchRule.method} />
               </div>
@@ -432,7 +432,7 @@ const NetworkRules: React.FC = () => {
                                 )}
                               />
                               <Controller
-                                name="modifyInfo.response.responseBody"
+                                name="modifyInfo.request.requestBody"
                                 defaultValue=""
                                 render={({ field: { ref, ...field } }) => (
                                   <Editor
