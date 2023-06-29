@@ -1,17 +1,11 @@
+import { useCallback } from "react";
 import { List as AntList, ListProps as AntListProps } from "antd";
 import classNames from "classnames";
-import React, { isValidElement, cloneElement } from "react";
+import React, { useMemo } from "react";
 import useMergedState from "rc-util/lib/hooks/useMergedState";
 import { usePrefixCls } from "../_utils/usePrefixCls";
-import type { ListItemProps } from "antd/es/list";
 import useElementWithStyle from "./style";
 import type { RenderNode } from "./style";
-
-type ReturnTypeOrKey<Fn, T> = Fn extends (...args: any[]) => any
-  ? ReturnType<Fn>
-  : Fn extends keyof T
-  ? T[Fn]
-  : never;
 
 interface ListSelectable<
   T,
@@ -33,7 +27,15 @@ interface ListSelectable<
   onChange?: (activeKey: Q, selectedRow: T) => void;
 }
 
-interface ListProps<
+import { getKey, ReturnTypeOrKey } from "./utils";
+import {
+  ListContextProvider,
+  ListContextValue,
+  ListItemContextProvider,
+} from "./context";
+import Item from "./components/Item";
+
+export interface ListProps<
   T,
   R extends ((item: T) => React.Key) | keyof T,
   Q = ReturnTypeOrKey<R, T>
@@ -69,55 +71,56 @@ const List = <
     { value: activeKey }
   );
 
+  const onItemClick: NonNullable<ListContextValue<T>["onItemClick"]> =
+    useCallback((_ev, item, key) => {
+      setInternalActiveKey(key as Q);
+      onChange?.(key as Q, item);
+    }, []);
+
   const internalRenderItem = (item: T, index: number) => {
-    const node = renderItem?.(item, index);
-    if (!selectable) return node;
-
-    let key: Q;
-
-    if (typeof rowKey === "function") {
-      key = rowKey(item) as Q;
-    } else if (rowKey) {
-      key = item[rowKey as keyof T] as Q;
-    } else {
-      key = (item as Record<"key", Q>).key;
-    }
-
-    const isSelected = key !== undefined && key === internalActiveKey;
-
-    if (isValidElement(node) && node.type === List.Item) {
-      return cloneElement(node, {
-        onClick: (ev) => {
-          setInternalActiveKey(key);
-          (node.props as ListItemProps)?.onClick?.(ev);
-          onChange?.(key, item);
-        },
-        className: classNames(
-          (node.props as ListItemProps)?.className,
-          isSelected && genCls("item-active")
-        ),
-      } as ListItemProps);
-    }
-
-    return node;
+    const key = getKey(
+      item,
+      rowKey as ((item: T) => React.Key) | keyof T | undefined,
+      index
+    );
+    return (
+      <ListItemContextProvider value={{ item, key }}>
+        {renderItem?.(item, index)}
+      </ListItemContextProvider>
+    );
   };
+
+  const listContextProviderValue = useMemo<ListContextValue<T>>(() => {
+    return {
+      activeKey: internalActiveKey as React.Key,
+      renderItem,
+      selectable,
+      rowKey,
+      onItemClick,
+      genItemCls: (suffix) =>
+        suffix ? genCls(`item-${suffix}`) : genCls("item"),
+    };
+  }, [activeKey, selectable, rowKey, onItemClick, renderItem, genCls]);
+
   const renderNode: RenderNode = (classes) => (
-    <AntList
-      className={classNames(
-        className,
-        classes,
-        selectable && genCls("selectable"),
-        compact && genCls("compact")
-      )}
-      renderItem={internalRenderItem}
-      rowKey={rowKey}
-      {...restProps}
-    ></AntList>
+    <ListContextProvider value={listContextProviderValue}>
+      <AntList
+        className={classNames(
+          className,
+          classes,
+          selectable && genCls("selectable"),
+          compact && genCls("compact")
+        )}
+        renderItem={internalRenderItem}
+        rowKey={rowKey}
+        {...restProps}
+      ></AntList>
+    </ListContextProvider>
   );
 
   return useElementWithStyle(props.prefixCls, renderNode);
 };
 
-List.Item = AntList.Item;
+List.Item = Item;
 
 export default List;

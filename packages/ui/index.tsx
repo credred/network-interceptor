@@ -19,6 +19,8 @@ import Modal from "./components/Modal";
 import Editor from "./components/Editor";
 export { default as Input } from "./components/Input";
 export type { InputProps } from "./components/Input";
+export * from "./components/List";
+export type { ListProps, SortableListProps } from "./components/List";
 import List from "./components/List";
 import { theme } from "antd";
 

@@ -26,15 +26,18 @@ const useStyle = genCustomComponentStyleHook("ListCustom", (token) => {
           },
         },
         [`${componentCls}-item`]: {
-          padding: 8,
+          padding: token.paddingSM,
           position: "relative",
           [`${componentCls}-selectable&`]: {
             cursor: "pointer",
           },
+          "&:hover": {
+            backgroundColor: token.controlItemBgHover,
+          },
           "&-active": {
             backgroundColor: token.controlItemBgActive,
             "&:hover": {
-              backgroundColor: token.controlItemBgActiveHover,
+              backgroundColor: token.controlItemBgActive,
             },
           },
         },

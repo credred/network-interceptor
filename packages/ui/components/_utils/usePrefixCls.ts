@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
 import { ConfigProvider } from "antd";
 
 export const usePrefixCls = (
@@ -8,8 +8,10 @@ export const usePrefixCls = (
   const { getPrefixCls } = useContext(ConfigProvider.ConfigContext);
   const prefixCls = getPrefixCls(namespace, customizePrefixCls);
 
-  const genCls = (suffix = "") =>
-    suffix ? `${prefixCls}-${suffix}` : prefixCls;
+  const genCls = useCallback(
+    (suffix = "") => (suffix ? `${prefixCls}-${suffix}` : prefixCls),
+    [prefixCls]
+  );
 
   const customCls = genCls("custom");
 
