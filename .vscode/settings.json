@@ -1,3 +1,9 @@
 {
-  "eslint.workingDirectories": ["apps/extension", "packages/ui", "packages/common"]
+  "eslint.workingDirectories": [
+    "apps/extension",
+    "packages/ui",
+    "packages/common",
+    "internal-apps/*"
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
