@@ -72,10 +72,13 @@ const List = <
   );
 
   const onItemClick: NonNullable<ListContextValue<T>["onItemClick"]> =
-    useCallback((_ev, item, key) => {
-      setInternalActiveKey(key as Q);
-      onChange?.(key as Q, item);
-    }, []);
+    useCallback(
+      (_ev, item, key) => {
+        setInternalActiveKey(key as Q);
+        onChange?.(key as Q, item);
+      },
+      [setInternalActiveKey, onChange]
+    );
 
   const internalRenderItem = (item: T, index: number) => {
     const key = getKey(
