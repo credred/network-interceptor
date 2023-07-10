@@ -113,19 +113,25 @@ const SortableList = <
           {...props}
           className={classNames(props.className, componentCls, classes)}
           header={
-            <DragOverlay dropAnimation={dropAnimationConfig}>
-              {activeId ? (
-                <SortableListItemContextProvider value={{ isOverlay: true }}>
-                  <ListItemContextProvider
-                    value={{ item: keyAndDataSource[activeId], key: activeId }}
-                  >
-                    {props.renderItem(keyAndDataSource[activeId], 0, {
-                      isOverlay: true,
-                    })}
-                  </ListItemContextProvider>
-                </SortableListItemContextProvider>
-              ) : null}
-            </DragOverlay>
+            <>
+              {props.header}
+              <DragOverlay dropAnimation={dropAnimationConfig}>
+                {activeId ? (
+                  <SortableListItemContextProvider value={{ isOverlay: true }}>
+                    <ListItemContextProvider
+                      value={{
+                        item: keyAndDataSource[activeId],
+                        key: activeId,
+                      }}
+                    >
+                      {props.renderItem(keyAndDataSource[activeId], 0, {
+                        isOverlay: true,
+                      })}
+                    </ListItemContextProvider>
+                  </SortableListItemContextProvider>
+                ) : null}
+              </DragOverlay>
+            </>
           }
         />
       </SortableContext>
