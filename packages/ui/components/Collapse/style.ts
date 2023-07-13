@@ -1,12 +1,12 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genCustomComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
-const useStyle = genCustomComponentStyleHook("CollapseCustom", (token) => {
-  const { customCls, componentCls } = token;
+const useStyle = genComponentStyleHook("Collapse", (token) => {
+  const { componentCls } = token;
 
   return [
     {
-      [customCls]: {
+      [componentCls]: {
         [`&${componentCls}-ghost`]: {
           [`& > ${componentCls}-item`]: {
             [`& > ${componentCls}-header`]: {

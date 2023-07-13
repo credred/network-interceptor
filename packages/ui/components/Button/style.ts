@@ -1,13 +1,13 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
 import { genFocusStyleWithSelector } from "../style";
-import { genCustomComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
-const useStyle = genCustomComponentStyleHook("ButtonCustom", (token) => {
-  const { customCls, componentCls } = token;
+const useStyle = genComponentStyleHook("Button", (token) => {
+  const { componentCls } = token;
 
   return [
     {
-      [customCls]: {
+      [componentCls]: {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",

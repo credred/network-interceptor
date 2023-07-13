@@ -1,12 +1,12 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genCustomComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
-const useStyle = genCustomComponentStyleHook("ModalCustom", (token) => {
-  const { componentCls, customCls } = token;
+const useStyle = genComponentStyleHook("Modal", (token) => {
+  const { componentCls } = token;
 
   return [
     {
-      [`${customCls}-full-screen`]: {
+      [`${componentCls}-full-screen`]: {
         top: 0,
         maxWidth: "100%",
         padding: 0,
@@ -30,7 +30,7 @@ const useStyle = genCustomComponentStyleHook("ModalCustom", (token) => {
           padding: 0,
         },
       },
-      [`${customCls}`]: {
+      [`${componentCls}`]: {
         [`${componentCls}-close-x`]: {
           display: "flex",
           justifyContent: "center",

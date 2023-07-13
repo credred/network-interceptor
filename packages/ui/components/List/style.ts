@@ -1,12 +1,12 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genCustomComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
-const useStyle = genCustomComponentStyleHook("ListCustom", (token) => {
-  const { componentCls, customCls } = token;
+const useStyle = genComponentStyleHook("List", (token) => {
+  const { componentCls } = token;
 
   return [
     {
-      [`${customCls}`]: {
+      [`${componentCls}`]: {
         display: "flex",
         flexDirection: "column",
 

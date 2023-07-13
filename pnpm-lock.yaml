@@ -52,7 +52,7 @@ importers:
         version: 5.1.3(react-dom@18.2.0)(react@18.2.0)
       '@ant-design/use-emotion-css':
         specifier: ^1.0.4
-        version: 1.0.4(@babel/core@7.21.8)(antd@5.6.2)(react-dom@18.2.0)(react@18.2.0)
+        version: 1.0.4(@babel/core@7.21.8)(antd@5.6.4)(react-dom@18.2.0)(react@18.2.0)
       '@types/node':
         specifier: ^18.15.12
         version: 18.15.12
@@ -147,6 +147,9 @@ importers:
 
   internal-apps/ui-playground:
     dependencies:
+      '@ant-design/icons':
+        specifier: ^5.1.3
+        version: 5.1.3(react-dom@18.2.0)(react@18.2.0)
       '@emotion/react':
         specifier: ^11.11.1
         version: 11.11.1(@types/react@18.2.7)(react@18.2.0)
@@ -243,8 +246,8 @@ importers:
         specifier: ^7.0.0
         version: 7.0.0
       '@ant-design/cssinjs':
-        specifier: ^1.9.1
-        version: 1.9.1(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^1.10.1
+        version: 1.10.1(react-dom@18.2.0)(react@18.2.0)
       '@ant-design/icons':
         specifier: ^5.1.3
         version: 5.1.3(react-dom@18.2.0)(react@18.2.0)
@@ -260,6 +263,9 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.1
         version: 3.2.1(react@18.2.0)
+      '@emotion/hash':
+        specifier: ^0.9.1
+        version: 0.9.1
       '@monaco-editor/react':
         specifier: ^4.5.1
         version: 4.5.1(monaco-editor@0.38.0)(react-dom@18.2.0)(react@18.2.0)
@@ -276,8 +282,8 @@ importers:
         specifier: ^1.17.1
         version: 1.17.1(react-dom@18.2.0)(react@18.2.0)
       antd:
-        specifier: ^5.6.2
-        version: 5.6.2(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^5.6.4
+        version: 5.6.4(react-dom@18.2.0)(react@18.2.0)
       classnames:
         specifier: ^2.3.2
         version: 2.3.2
@@ -368,23 +374,6 @@ packages:
       stylis: 4.2.0
     dev: false
 
-  /@ant-design/cssinjs@1.9.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-CZt1vCMs/sY7RoacYuIkZwQmb8Bhp99ReNNE9Y8lnUzik8fmCdKAQA7ecvVOFwmNFdcBHga7ye/XIRrsbkiqWw==}
-    peerDependencies:
-      react: '>=16.0.0'
-      react-dom: '>=16.0.0'
-    dependencies:
-      '@babel/runtime': 7.21.5
-      '@emotion/hash': 0.8.0
-      '@emotion/unitless': 0.7.5
-      classnames: 2.3.2
-      csstype: 3.1.2
-      rc-util: 5.30.0(react-dom@18.2.0)(react@18.2.0)
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      stylis: 4.2.0
-    dev: false
-
   /@ant-design/icons-svg@4.2.1:
     resolution: {integrity: sha512-EB0iwlKDGpG93hW8f85CTJTs4SvMX7tt5ceupvhALp1IF44SeUFOMhKUOYqpsoYWQKAOuTRDMqn75rEaKDp0Xw==}
     dev: false
@@ -418,7 +407,7 @@ packages:
       throttle-debounce: 5.0.0
     dev: false
 
-  /@ant-design/use-emotion-css@1.0.4(@babel/core@7.21.8)(antd@5.6.2)(react-dom@18.2.0)(react@18.2.0):
+  /@ant-design/use-emotion-css@1.0.4(@babel/core@7.21.8)(antd@5.6.4)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-PekXeeHCpSNi6ziV62gy2Yy2MijssiVMaCJbbyOmPbeZJYQmB4FecJwlB+e2WuIbSHQdM3O9pyN4Cx3GJKxJkA==}
     peerDependencies:
       antd: '>=5.0.0'
@@ -426,7 +415,7 @@ packages:
       react-dom: '>=17.0.0'
     dependencies:
       '@emotion/css': 11.10.5(@babel/core@7.21.8)
-      antd: 5.6.2(react-dom@18.2.0)(react@18.2.0)
+      antd: 5.6.4(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
@@ -961,7 +950,7 @@ packages:
       '@babel/helper-module-imports': 7.18.6
       '@babel/plugin-syntax-jsx': 7.18.6(@babel/core@7.21.8)
       '@babel/runtime': 7.20.1
-      '@emotion/hash': 0.9.0
+      '@emotion/hash': 0.9.1
       '@emotion/memoize': 0.8.0
       '@emotion/serialize': 1.1.1
       babel-plugin-macros: 3.1.0
@@ -1028,10 +1017,6 @@ packages:
     resolution: {integrity: sha512-kBJtf7PH6aWwZ6fka3zQ0p6SBYzx4fl1LoZXE2RrnYST9Xljm7WfKJrU4g/Xr3Beg72MLrp1AWNUmuYJTL7Cow==}
     dev: false
 
-  /@emotion/hash@0.9.0:
-    resolution: {integrity: sha512-14FtKiHhy2QoPIzdTcvh//8OyBlknNs2nXRwIhG904opCby3l+9Xaf/wuPvICBF0rc1ZCNBd3nKe9cd2mecVkQ==}
-    dev: false
-
   /@emotion/hash@0.9.1:
     resolution: {integrity: sha512-gJB6HLm5rYwSLI6PQa+X1t5CFGrv1J1TWG+sOyMCeKz2ojaj6Fnl/rZEspogG+cvqbt4AE/2eIyD2QfLKTBNlQ==}
     dev: false
@@ -1068,7 +1053,7 @@ packages:
   /@emotion/serialize@1.1.1:
     resolution: {integrity: sha512-Zl/0LFggN7+L1liljxXdsVSVlg6E/Z/olVWpfxUTxOAmi8NU7YoeWeLfi1RmnB2TATHoaWwIBRoL+FvAJiTUQA==}
     dependencies:
-      '@emotion/hash': 0.9.0
+      '@emotion/hash': 0.9.1
       '@emotion/memoize': 0.8.0
       '@emotion/unitless': 0.8.0
       '@emotion/utils': 1.2.0
@@ -2034,8 +2019,8 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /antd@5.6.2(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-h67gKgJRs07Qrf27AiKcJSEI3nCAmaCxxvEz6DSdRl1mHc03O8zAemRA6jPQQMPS5q4k7FxIphN+2ZnzdXlU2Q==}
+  /antd@5.6.4(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-ttAN5vk6yUybDCe5WFloEb49dyLwyec+FJlvopfZFSkScHX2OBbfpPlCQ50Bpp2u5P/eqN6EQUM4PsE4MPslAA==}
     peerDependencies:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
@@ -2060,7 +2045,7 @@ packages:
       rc-dialog: 9.1.0(react-dom@18.2.0)(react@18.2.0)
       rc-drawer: 6.2.0(react-dom@18.2.0)(react@18.2.0)
       rc-dropdown: 4.1.0(react-dom@18.2.0)(react@18.2.0)
-      rc-field-form: 1.32.2(react-dom@18.2.0)(react@18.2.0)
+      rc-field-form: 1.34.1(react-dom@18.2.0)(react@18.2.0)
       rc-image: 5.17.1(react-dom@18.2.0)(react@18.2.0)
       rc-input: 1.0.4(react-dom@18.2.0)(react@18.2.0)
       rc-input-number: 7.4.0(react-dom@18.2.0)(react@18.2.0)
@@ -4726,8 +4711,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /rc-field-form@1.32.2(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-SzqG1YGyD2P42ztZJ7qoPQp6FV9bD51RUdKGG/5xwybU1wbFdgWTqiMXkS8UR9L4GwXVMKh5PaF2I4EBXd/Rng==}
+  /rc-field-form@1.34.1(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-oohdrjUHYWzY4H5EOw/9xk324oatZOKiCfo3FwnK9G/LswoqflWoxeaAGMkjI5Ug4YxSq80fehoJjVYApSheYA==}
     engines: {node: '>=8.x'}
     peerDependencies:
       react: '>=16.9.0'

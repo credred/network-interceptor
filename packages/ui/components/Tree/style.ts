@@ -1,12 +1,12 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genCustomComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
-const useStyle = genCustomComponentStyleHook("TreeCustom", (token) => {
-  const { componentCls, customCls } = token;
+const useStyle = genComponentStyleHook("Tree", (token) => {
+  const { componentCls } = token;
 
   return [
     {
-      [`${customCls}-compact`]: {
+      [`${componentCls}-compact`]: {
         [`${componentCls}-node-content-wrapper`]: {
           lineHeight: `${token.controlHeightXS}px`,
           minHeight: "auto",
@@ -15,7 +15,7 @@ const useStyle = genCustomComponentStyleHook("TreeCustom", (token) => {
           lineHeight: `${token.controlHeightXS}px`,
           width: `${token.controlHeightXS}px`,
         },
-        [`${componentCls}-indent,`]: {
+        [`${componentCls}-indent`]: {
           height: 0,
         },
       },

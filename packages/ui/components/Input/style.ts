@@ -1,12 +1,12 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genCustomComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
-const useStyle = genCustomComponentStyleHook("InputCustom", (token) => {
-  const { customCls, componentCls } = token;
+const useStyle = genComponentStyleHook("Input", (token) => {
+  const { componentCls } = token;
 
   return [
     {
-      [customCls]: {
+      [componentCls]: {
         [`&-affix-wrapper`]: {
           [`${componentCls}-clear-icon`]: {
             display: "flex",

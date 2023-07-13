@@ -1,5 +1,5 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
 const useStyle = genComponentStyleHook("ContextMenu", (token) => {
   const { componentCls } = token;

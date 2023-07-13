@@ -1,12 +1,12 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genCustomComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
-const useStyle = genCustomComponentStyleHook("CheckboxCustom", (token) => {
-  const { customCls, componentCls } = token;
+const useStyle = genComponentStyleHook("Checkbox", (token) => {
+  const { componentCls } = token;
 
   return [
     {
-      [`${customCls}-wrapper`]: {
+      [`${componentCls}-wrapper`]: {
         alignItems: "center",
         [`${componentCls}`]: {
           top: 0,

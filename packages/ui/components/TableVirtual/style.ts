@@ -1,8 +1,8 @@
 import { TinyColor } from "@ctrl/tinycolor";
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genCustomComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
-const useStyle = genCustomComponentStyleHook("TableVirtualCustom", (token) => {
+const useStyle = genComponentStyleHook("TableVirtual", (token) => {
   const { componentCls, antCls } = token;
   const tableCls = `${antCls}-table`;
   const tableBorder = `${token.lineWidth}px ${token.lineType} ${token.colorBorderSecondary}`;

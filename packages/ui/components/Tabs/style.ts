@@ -1,14 +1,14 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genCustomComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
-const useStyle = genCustomComponentStyleHook("TabsCustom", (token) => {
-  const { componentCls, customCls } = token;
+const useStyle = genComponentStyleHook("Tabs", (token) => {
+  const { componentCls } = token;
 
   const tabCls = `${componentCls}-tab`;
 
   return [
     {
-      [`${customCls}-full-height`]: {
+      [`${componentCls}-full-height`]: {
         height: "100%",
         display: "flex",
         [`${componentCls}`]: {
@@ -23,7 +23,7 @@ const useStyle = genCustomComponentStyleHook("TabsCustom", (token) => {
           },
         },
       },
-      [customCls]: {
+      [componentCls]: {
         [`${tabCls}`]: {
           padding: `${token.sizeXS}px ${token.sizeSM}px`,
           [`&:hover`]: {

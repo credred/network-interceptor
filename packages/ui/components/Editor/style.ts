@@ -1,5 +1,5 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
 const useStyle = genComponentStyleHook("Editor", (token) => {
   const { componentCls } = token;

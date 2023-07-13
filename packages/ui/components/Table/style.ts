@@ -1,12 +1,12 @@
 import { genUseElementWithStyle } from "../ConfigProvider";
-import { genCustomComponentStyleHook } from "../theme";
+import { genComponentStyleHook } from "../theme/internal";
 
-const useStyle = genCustomComponentStyleHook("TableCustom", (token) => {
-  const { componentCls, customCls, antCls } = token;
+const useStyle = genComponentStyleHook("Table", (token) => {
+  const { componentCls, antCls } = token;
 
   return [
     {
-      [`${customCls}-wrapper-full-height`]: {
+      [`${componentCls}-wrapper-full-height`]: {
         height: "100%",
         [`${componentCls}`]: {
           height: "100%",
@@ -28,7 +28,7 @@ const useStyle = genCustomComponentStyleHook("TableCustom", (token) => {
           },
         },
       },
-      [`${customCls}`]: {
+      [`${componentCls}`]: {
         [`${componentCls}-placeholder`]: {
           display: "none",
         },
