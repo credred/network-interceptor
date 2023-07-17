@@ -49,4 +49,4 @@ const Tree = React.forwardRef(InternalTree) as unknown as CompoundedComponent;
 Tree.DirectoryTree = AntdTree.DirectoryTree;
 Tree.TreeNode = AntdTree.TreeNode;
 
-export default InternalTree;
+export default Tree;

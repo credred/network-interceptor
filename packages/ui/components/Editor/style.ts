@@ -8,6 +8,19 @@ const useStyle = genComponentStyleHook("Editor", (token) => {
   return [
     {
       [`${componentCls}`]: {
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+        height: "100%",
+
+        [`${componentCls}-flex`]: {
+          flex: 1,
+        },
+
+        [`${componentCls}-core`]: {
+          minHeight: 0,
+          flex: 1,
+        },
         [`${componentCls}-toolbar`]: {
           backgroundColor: token.colorFillTertiary,
         },

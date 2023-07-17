@@ -140,15 +140,8 @@ const Editor: FC<EditorProps> = (props) => {
   );
 
   const renderNode: RenderNode = (classes) => (
-    <div
-      className={classNames(
-        "flex flex-col min-h-0",
-        flex ? "flex-1" : "h-full",
-        classes,
-        componentCls
-      )}
-    >
-      <div className="min-h-0 flex-1">
+    <div className={classNames(classes, componentCls, genCls("flex"))}>
+      <div className={genCls("core")}>
         <MonacoEditor
           {...editorProps}
           options={{
