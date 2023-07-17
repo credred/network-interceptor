@@ -1,7 +1,7 @@
 import { PowerRequest, PowerResponse } from "../base";
 import { InterceptorConfig } from "../types";
 import { postTask, statusHasBody } from "../utils";
-import { createResponse, isDomParserSupportedType } from "./utils";
+import { createResponse, parseToDomParserSupportedType } from "./utils";
 import { parseBuffer } from "./utils/parseBuffer";
 import { parseRequestBody } from "./utils/parseRequestBody";
 import { readStream } from "./utils/readStream";
@@ -389,11 +389,9 @@ export const createInterceptedXhr = <T>(
         return null;
       }
 
-      if (isDomParserSupportedType(contentType)) {
-        return new DOMParser().parseFromString(
-          this.#responseBufferText,
-          contentType
-        );
+      const type = parseToDomParserSupportedType(contentType);
+      if (type) {
+        return new DOMParser().parseFromString(this.#responseBufferText, type);
       }
 
       return null;

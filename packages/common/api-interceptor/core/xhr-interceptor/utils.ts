@@ -22,9 +22,9 @@ export const createResponse = (body: BodyInit | null, xhr: XMLHttpRequest) => {
   });
 };
 
-export function isDomParserSupportedType(
+export function parseToDomParserSupportedType(
   type: string
-): type is DOMParserSupportedType {
+): DOMParserSupportedType | undefined {
   const supportedTypes: Array<DOMParserSupportedType> = [
     "application/xhtml+xml",
     "application/xml",
@@ -32,7 +32,9 @@ export function isDomParserSupportedType(
     "text/html",
     "text/xml",
   ];
-  return supportedTypes.some((supportedType) => {
-    return type.startsWith(supportedType);
-  });
+  for (const supportedType of supportedTypes) {
+    if (type.startsWith(supportedType)) {
+      return supportedType;
+    }
+  }
 }
