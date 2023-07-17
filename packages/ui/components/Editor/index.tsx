@@ -140,7 +140,7 @@ const Editor: FC<EditorProps> = (props) => {
   );
 
   const renderNode: RenderNode = (classes) => (
-    <div className={classNames(classes, componentCls, genCls("flex"))}>
+    <div className={classNames(classes, componentCls, flex && genCls("flex"))}>
       <div className={genCls("core")}>
         <MonacoEditor
           {...editorProps}
@@ -150,7 +150,6 @@ const Editor: FC<EditorProps> = (props) => {
             fixedOverflowWidgets: true,
             ...editorProps.options,
           }}
-          {...editorProps}
           onMount={onEditorMount}
           onChange={onChange}
         />
