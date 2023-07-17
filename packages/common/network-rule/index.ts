@@ -76,6 +76,7 @@ export const initRule = (): NetworkRule => {
     id: uid(),
     modifyInfo: {
       response: {
+        responseHeaders: [["Content-Type", "application/json"]],
         status: 200,
       },
     },
