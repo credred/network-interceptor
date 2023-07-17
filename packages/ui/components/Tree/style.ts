@@ -6,6 +6,9 @@ const useStyle = genComponentStyleHook("Tree", (token) => {
 
   return [
     {
+      [`${componentCls}`]: {
+        background: "transparent",
+      },
       [`${componentCls}-compact`]: {
         [`${componentCls}-node-content-wrapper`]: {
           lineHeight: `${token.controlHeightXS}px`,
