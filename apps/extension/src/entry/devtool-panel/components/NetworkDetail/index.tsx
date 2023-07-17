@@ -184,6 +184,7 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
               key: "preview",
               children: (
                 <Preview
+                  key={networkInfo?.id}
                   isBase64={networkInfo?.isBase64}
                   value={networkInfo?.responseBody ?? ""}
                 />
