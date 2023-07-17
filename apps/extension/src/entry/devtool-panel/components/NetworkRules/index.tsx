@@ -28,6 +28,7 @@ import {
   MinusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
+import { useDebounceFn } from "ahooks";
 import { createRequest } from "../utils/request";
 import HttpBadge from "./HttpBadge";
 import ArrayField from "./components/ArrayField";
@@ -113,6 +114,12 @@ const useStateWithUpdateRef = <S,>(
   return [shouldUpdateRef, state, setStateWithUpdate, setStateWithoutUpdate];
 };
 
+const useModifyRulesCallback = (callback: () => void) => {
+  const dispatchModifyRulesEvent = () => callback();
+
+  return dispatchModifyRulesEvent;
+};
+
 const request = createRequest(uid());
 const NetworkRules: React.FC = () => {
   const [
@@ -151,7 +158,7 @@ const NetworkRules: React.FC = () => {
   useEffect(() => {
     const subscription = watch((value, { type }) => {
       if (type !== "change" || !value) return;
-      void request.updateRule(value as NetworkRule, true);
+      debouncedUpdateRule.run(value as NetworkRule);
       setRulesWithoutUpdate((rules) =>
         rules.map((oldRule) =>
           oldRule.id === value.id ? (value as NetworkRule) : oldRule
@@ -167,8 +174,20 @@ const NetworkRules: React.FC = () => {
     exact: true,
   });
 
+  const debouncedUpdateRule = useDebounceFn(
+    (rule: NetworkRule) => {
+      void request.updateRule(rule, true);
+    },
+    { wait: 2000 }
+  );
+
+  const dispatchModifyRulesEvent = useModifyRulesCallback(() => {
+    debouncedUpdateRule.flush();
+  });
+
   const handleDeleteRule = (ruleId?: string) => {
     if (ruleId) {
+      dispatchModifyRulesEvent();
       void request.deleteRule(ruleId);
       const linkRule = linkRules[ruleId];
       setActiveRule(linkRule.next?.value || linkRule.pre?.value);
@@ -176,6 +195,7 @@ const NetworkRules: React.FC = () => {
   };
 
   const handleNewRule = () => {
+    dispatchModifyRulesEvent();
     const rule = initRule();
     void request.createRule(rule).then(() => {
       setActiveRule(rule);
@@ -184,6 +204,7 @@ const NetworkRules: React.FC = () => {
 
   useEffect(() => {
     if (shouldUpdateRuleRef.current) {
+      debouncedUpdateRule.flush();
       // defaultValue will be modified if keepDefaultValues is not true
       reset(activeRule, { keepDefaultValues: true });
     } else {
