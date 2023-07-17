@@ -2,6 +2,7 @@ import {
   closestCenter,
   defaultDropAnimationSideEffects,
   DndContext,
+  DragEndEvent,
   DragOverlay,
   DragStartEvent,
   DropAnimation,
@@ -12,6 +13,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import {
+  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
@@ -48,6 +50,7 @@ export interface SortableListProps<
     index: number,
     status?: SortableItemStatus
   ) => React.ReactNode;
+  onSort?: (newDataSource: T[], from: T, to: T) => void;
 }
 
 const SortableList = <
@@ -57,6 +60,7 @@ const SortableList = <
 >(
   props: SortableListProps<T, R, Q>
 ) => {
+  const { onSort, ...restProps } = props;
   const { dataSource, rowKey, prefixCls } = props;
   const { prefixCls: componentCls, genCls } = usePrefixCls(
     sortableListClsNamespace,
@@ -64,13 +68,12 @@ const SortableList = <
   );
 
   const keyAndDataSource = useMemo(() => {
-    return (dataSource || []).reduce<Record<React.Key, T>>(
-      (result, item, index) => {
-        result[getKey(item, rowKey, index)] = item;
-        return result;
-      },
-      {}
-    );
+    return (dataSource || []).reduce<
+      Record<React.Key, { data: T; index: number }>
+    >((result, item, index) => {
+      result[getKey(item, rowKey, index)] = { data: item, index };
+      return result;
+    }, {});
   }, [dataSource, rowKey]);
   const sortableItems = useMemo(() => {
     return Object.keys(keyAndDataSource);
@@ -83,7 +86,20 @@ const SortableList = <
     setActiveId(event.active.id);
   }
 
-  function handleDragEnd() {
+  function handleDragEnd({ active, over }: DragEndEvent) {
+    if (over && active.id !== over?.id) {
+      const activeData = keyAndDataSource[active.id];
+      const overData = keyAndDataSource[over.id];
+      onSort?.(
+        arrayMove(dataSource as T[], activeData.index, overData.index),
+        activeData.data,
+        overData.data
+      );
+    }
+    setActiveId(null);
+  }
+
+  function handleDragCancel() {
     setActiveId(null);
   }
 
@@ -104,13 +120,14 @@ const SortableList = <
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
     >
       <SortableContext
         items={sortableItems}
         strategy={verticalListSortingStrategy}
       >
         <List
-          {...props}
+          {...restProps}
           className={classNames(props.className, componentCls, classes)}
           header={
             <>
@@ -120,11 +137,11 @@ const SortableList = <
                   <SortableListItemContextProvider value={{ isOverlay: true }}>
                     <ListItemContextProvider
                       value={{
-                        item: keyAndDataSource[activeId],
+                        item: keyAndDataSource[activeId].data,
                         key: activeId,
                       }}
                     >
-                      {props.renderItem(keyAndDataSource[activeId], 0, {
+                      {props.renderItem(keyAndDataSource[activeId].data, 0, {
                         isOverlay: true,
                       })}
                     </ListItemContextProvider>

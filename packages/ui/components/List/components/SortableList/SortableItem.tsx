@@ -21,7 +21,8 @@ const InternalSortableItem: React.ForwardRefRenderFunction<
   R extends ((item: T) => React.Key) | keyof T,
   Q = ReturnTypeOrKey<R, T>
 >(
-  props: ListItemProps
+  props: ListItemProps,
+  ref: React.ForwardedRef<HTMLDivElement>
 ) => {
   const { className, ...restProps } = props;
   const { key } = useContext(
@@ -45,7 +46,15 @@ const InternalSortableItem: React.ForwardRefRenderFunction<
   };
 
   const draggableItemProps = {
-    ref: setNodeRef,
+    ref: (node: HTMLDivElement) => {
+      setNodeRef(node);
+      if (!ref) return;
+      if (typeof ref === "function") {
+        ref(node);
+      } else {
+        ref.current = node;
+      }
+    },
     style,
     ...attributes,
     ...listeners,
