@@ -56,10 +56,11 @@ interface EditorProps extends EditorType.EditorProps {
   onValueChange?: EditorType.OnChange;
 }
 
-const useAutoFormat = (
-  autoFormat: boolean,
+const useSeed = (
   seed: React.Key | undefined,
-  formatCode: () => Promise<void> | undefined
+  autoFormat: boolean,
+  formatCode: () => Promise<void> | undefined,
+  resetPosition: () => void
 ) => {
   const isAutoFormattingRef = useRef(false);
 
@@ -67,6 +68,7 @@ const useAutoFormat = (
     if (autoFormat) {
       isAutoFormattingRef.current = true;
       await formatCode();
+      resetPosition();
       isAutoFormattingRef.current = false;
     }
   };
@@ -85,7 +87,10 @@ const useAutoFormat = (
   };
 
   useUpdateEffect(() => {
-    void tryFormatCode();
+    void (async () => {
+      await tryFormatCode();
+      resetPosition();
+    })();
   }, [seed]);
 
   return { tryFormatCode, wrapperOnChange };
@@ -111,10 +116,21 @@ const Editor: FC<EditorProps> = (props) => {
     return editorRef.current?.getAction("editor.action.formatDocument")?.run();
   };
 
-  const { tryFormatCode, wrapperOnChange } = useAutoFormat(
-    autoFormat,
+  const resetPosition = () => {
+    editorRef.current?.revealPosition(
+      {
+        lineNumber: 1,
+        column: 1,
+      },
+      monaco.editor.ScrollType.Immediate
+    );
+  };
+
+  const { tryFormatCode, wrapperOnChange } = useSeed(
     seed,
-    formatCode
+    autoFormat,
+    formatCode,
+    resetPosition
   );
 
   const onEditorMount: EditorType.OnMount = (editor, monaco) => {
