@@ -32,6 +32,7 @@ export const ContextMenu: React.FC<MenuProps> = ({ className, ...props }) => {
   return useElementWithStyle("", (classes) => {
     return (
       <Menu
+        animation={false}
         {...props}
         className={classNames(className, classes)}
         onContextMenu={onContextMenu}
