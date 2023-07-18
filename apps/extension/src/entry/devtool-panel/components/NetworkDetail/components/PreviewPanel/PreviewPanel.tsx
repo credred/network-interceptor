@@ -1,6 +1,6 @@
 import PreviewJson from "./PreviewJson";
 
-interface PreviewProps {
+interface PreviewPanelProps {
   value: string;
   isBase64?: boolean;
 }
@@ -9,7 +9,10 @@ const isBase64Image = (base64String: string) => {
   return base64String.startsWith("data:image/");
 };
 
-const Preview: React.FC<PreviewProps> = ({ value, isBase64 = false }) => {
+const PreviewPanel: React.FC<PreviewPanelProps> = ({
+  value,
+  isBase64 = false,
+}) => {
   if (!value) {
     return (
       <div className="flex w-full h-full items-center">
@@ -37,4 +40,4 @@ const Preview: React.FC<PreviewProps> = ({ value, isBase64 = false }) => {
   return <span>TODO</span>;
 };
 
-export default Preview;
+export { PreviewPanel };
