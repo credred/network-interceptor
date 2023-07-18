@@ -93,8 +93,8 @@ const transformConfig = (
         });
       }
       const responseModifyInfo = powerRequest.ctx.rule?.modifyInfo.response;
-      if (responseModifyInfo) {
-        await delay(responseModifyInfo.delay);
+      if (responseModifyInfo?.delay) {
+        await delay(responseModifyInfo.delay * 1000);
       }
       void config.responseReceived(
         await serializePowerResponse(powerRequest, powerResponse)
