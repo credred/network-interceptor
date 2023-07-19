@@ -37,7 +37,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       return <PreviewJson value={obj} className="p-1" />;
     } catch {}
   }
-  return <span>TODO</span>;
+  return <span>{value}</span>;
 };
 
 export { PreviewPanel };

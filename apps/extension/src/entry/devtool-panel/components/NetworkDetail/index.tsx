@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { Tabs, Editor } from "ui";
+import { Tabs, Editor, TabsProps } from "ui";
 import { NetworkInfo } from "common/api-interceptor";
 import { initRuleByNetworkInfo, NetworkRule } from "common/network-rule";
 import { usePrevious, useMemoizedFn } from "ahooks";
@@ -8,6 +8,7 @@ import { request } from "../utils/request";
 import { Header } from "common/typings";
 import { PreviewPanel } from "./components/PreviewPanel";
 import { HeadersPanel } from "./components/HeadersPanel";
+import { PayloadPanel, hasPayload } from "./components/PayloadPanel";
 
 const debug = debugFn("NetworkDetail");
 debugFn.enable("*");
@@ -89,44 +90,51 @@ const NetWorkDetail: FC<NetWorkDetailProps> = (props) => {
         <Tabs
           compact
           defaultActiveKey="headers"
-          items={[
-            {
-              label: "Headers",
-              key: "headers",
-              children: <HeadersPanel detail={networkInfo} />,
-            },
-            {
-              label: "Preview",
-              key: "preview",
-              children: (
-                <PreviewPanel
-                  key={networkInfo?.id}
-                  isBase64={networkInfo?.isBase64}
-                  value={networkInfo?.responseBody ?? ""}
-                />
-              ),
-            },
-            {
-              label: "Response",
-              key: "response",
-              children: (
-                <Editor
-                  seed={networkInfo?.id}
-                  autoFormat
-                  options={{ readOnly: networkInfo?.isBase64 }}
-                  theme="vs-dark"
-                  language={lang}
-                  value={networkInfo?.responseBody ?? ""}
-                  onChange={updateResponseBody}
-                />
-              ),
-            },
-            {
-              label: "Rules",
-              key: "rules",
-              children: "rule",
-            },
-          ]}
+          items={
+            [
+              {
+                label: "Headers",
+                key: "headers",
+                children: <HeadersPanel detail={networkInfo} />,
+              },
+              hasPayload(networkInfo) && {
+                label: "Payload",
+                key: "payload",
+                children: <PayloadPanel detail={networkInfo} />,
+              },
+              {
+                label: "Preview",
+                key: "preview",
+                children: (
+                  <PreviewPanel
+                    key={networkInfo?.id}
+                    isBase64={networkInfo?.isBase64}
+                    value={networkInfo?.responseBody ?? ""}
+                  />
+                ),
+              },
+              {
+                label: "Response",
+                key: "response",
+                children: (
+                  <Editor
+                    seed={networkInfo?.id}
+                    autoFormat
+                    options={{ readOnly: networkInfo?.isBase64 }}
+                    theme="vs-dark"
+                    language={lang}
+                    value={networkInfo?.responseBody ?? ""}
+                    onChange={updateResponseBody}
+                  />
+                ),
+              },
+              {
+                label: "Rules",
+                key: "rules",
+                children: "rule",
+              },
+            ].filter(Boolean) as TabsProps["items"]
+          }
         ></Tabs>
       </div>
     </div>
