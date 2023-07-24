@@ -7,6 +7,7 @@ const useStyle = genComponentStyleHook("ContextMenu", (token) => {
   return [
     {
       ".contexify": {
+        margin: "2px",
         [`.contexify_itemContent_space`]: {
           [`.ant-space-item`]: {
             display: "flex",
