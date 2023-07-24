@@ -27,6 +27,7 @@ import {
   DeleteOutlined,
   MinusCircleOutlined,
   PlusOutlined,
+  PoweroffOutlined,
 } from "@ant-design/icons";
 import { useDebounceFn } from "ahooks";
 import { createRequest } from "../utils/request";
@@ -58,7 +59,13 @@ const generateLinkRules = (rules: NetworkRule[]): Record<string, LinkRule> => {
   return linkRule;
 };
 
-const useRuleContextMenu = (handleDeleteRule: (ruleId?: string) => void) => {
+const useRuleContextMenu = ({
+  handleDeleteRule,
+  handleToggleRule,
+}: {
+  handleDeleteRule: (ruleId?: string) => void;
+  handleToggleRule: (rule?: NetworkRule) => void;
+}) => {
   const activeRuleRef = useRef<NetworkRule>();
   const MENU_ID = "NetworkRulesItem";
 
@@ -76,6 +83,12 @@ const useRuleContextMenu = (handleDeleteRule: (ruleId?: string) => void) => {
 
   const contextMenuNode = (
     <ContextMenu id={MENU_ID}>
+      <ContextMenuItem
+        icon={<PoweroffOutlined />}
+        onClick={() => handleToggleRule(activeRuleRef.current)}
+      >
+        <span>Toggle</span>
+      </ContextMenuItem>
       <ContextMenuItem
         icon={<DeleteOutlined />}
         onClick={() => handleDeleteRule(activeRuleRef.current?.id)}
@@ -194,6 +207,13 @@ const NetworkRules: React.FC = () => {
     }
   };
 
+  const handleToggleRule = (rule?: NetworkRule) => {
+    if (rule) {
+      dispatchModifyRulesEvent();
+      void request.toggleRule({ ruleId: rule.id, disabled: !rule.disabled });
+    }
+  };
+
   const handleNewRule = () => {
     dispatchModifyRulesEvent();
     const rule = initRule();
@@ -212,8 +232,10 @@ const NetworkRules: React.FC = () => {
     }
   }, [activeRule]);
 
-  const { showContextMenu, contextMenuNode } =
-    useRuleContextMenu(handleDeleteRule);
+  const { showContextMenu, contextMenuNode } = useRuleContextMenu({
+    handleDeleteRule,
+    handleToggleRule,
+  });
 
   return (
     <div className="flex h-full min-h-[200px]">
@@ -250,6 +272,16 @@ const NetworkRules: React.FC = () => {
                 >
                   {item.ruleName}
                 </div>
+              )}
+              {/* disable mark */}
+              {item?.disabled && (
+                <div
+                  className="absolute right-0 top-0 bottom-0"
+                  style={{
+                    background: token.colorError,
+                    width: token.lineWidth * 2,
+                  }}
+                ></div>
               )}
             </div>
           </List.Item>

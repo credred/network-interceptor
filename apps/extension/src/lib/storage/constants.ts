@@ -3,6 +3,7 @@ export enum StorageMessage {
   updateRule = "storage:updateRule",
   deleteRule = "storage:deleteRule",
   getRule = "storage:getRule",
+  toggleRule = "storage:toggleRule",
   clearRules = "storage:clearRules",
   getAllRules = "storage:getAllRules",
 }

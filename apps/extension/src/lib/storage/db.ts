@@ -20,7 +20,7 @@ interface InterceptorDB extends DBSchema {
 }
 
 interface BaseChangeType<T> {
-  type: "created" | "updated";
+  type: "created" | "updated" | "toggled";
   operator?: Operator;
   data: T;
 }
@@ -66,6 +66,19 @@ export const updateRule = async (rule: NetworkRule, operator?: Operator) => {
   const key = await store.index("id").getKey(rule.id);
   await store.put(rule, key);
   internalRuleChange$.next({ type: "updated", data: rule, operator });
+};
+
+export const toggleRule = async (
+  { ruleId, disabled }: { ruleId: string; disabled: boolean },
+  operator?: Operator
+) => {
+  const db = await dbRequest;
+  const store = db.transaction("rule", "readwrite").objectStore("rule");
+  const oldRule = (await store.index("id").get(ruleId)) as NetworkRuleModel;
+  const key = await store.index("id").getKey(ruleId);
+  const newRule = { ...oldRule, disabled };
+  await store.put(newRule, key);
+  internalRuleChange$.next({ type: "toggled", data: newRule, operator });
 };
 
 export const createRule = async (rule: NetworkRule, operator?: Operator) => {

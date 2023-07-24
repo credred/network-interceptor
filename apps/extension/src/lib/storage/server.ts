@@ -9,6 +9,7 @@ import {
   clearRules,
   getAllRules,
   rules$,
+  toggleRule,
 } from "./db";
 
 export const createStorageServer = (
@@ -29,6 +30,10 @@ export const createStorageServer = (
 
   onMessage(StorageMessage.getRule, ({ data: { data } }) => {
     return getRule(data);
+  });
+
+  onMessage(StorageMessage.toggleRule, ({ data: { data } }) => {
+    return toggleRule(data);
   });
 
   onMessage(StorageMessage.clearRules, () => {

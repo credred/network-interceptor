@@ -42,6 +42,7 @@ export interface NetworkRule {
    * @default false
    */
   ruleName?: string;
+  disabled?: boolean;
   baseMatchRule: NetworkBaseMatchRule;
   advanceMatchRules: NetworkAdvanceMatchRule[];
   modifyInfo: NetworkModifyInfo;
